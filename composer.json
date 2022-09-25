@@ -28,12 +28,12 @@
     "symfony/dom-crawler": "^5.4"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.3",
-    "phpunit/phpunit": "^8.5",
-    "vimeo/psalm": "^4.13",
-    "monolog/monolog": "^2.6",
+    "friendsofphp/php-cs-fixer": "3.11.0",
+    "phpunit/phpunit": "8.5.30",
+    "vimeo/psalm": "4.27.0",
+    "monolog/monolog": "2.8.0",
     "symfony/framework-bundle": "^5.4",
-    "doctrine/orm": "^2.12",
+    "doctrine/orm": "2.13.2",
     "symfony/swiftmailer-bundle": "^3.5"
   },
   "config": {
