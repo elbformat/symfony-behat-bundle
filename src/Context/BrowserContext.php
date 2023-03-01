@@ -19,6 +19,7 @@ use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\DomCrawler\Field\ChoiceFormField;
 use Symfony\Component\DomCrawler\Field\FileFormField;
 use Symfony\Component\DomCrawler\Field\FormField;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\KernelInterface;
 
@@ -156,7 +157,7 @@ class BrowserContext implements Context
     {
         $form = $this->state->getLastForm();
 
-        $this->doRequest($this->buildRequest($form->getUri(), $form->getMethod(), [], null, $form->getPhpValues()));
+        $this->doRequest($this->buildRequest($form->getUri(), $form->getMethod(), [], null, $form->getPhpValues(), $form->getPhpFiles()));
     }
 
     #[When('I select :fixture upload at :name')]
@@ -426,10 +427,33 @@ class BrowserContext implements Context
     }
 
     /** @param array<string,string> $server */
-    protected function buildRequest(string $uri, string $method = 'GET', array $server = [], ?string $content = null, array $parameters = []): Request
+    protected function buildRequest(string $uri, string $method = 'GET', array $server = [], ?string $content = null, array $parameters = [], array $files = []): Request
     {
         $server['SCRIPT_FILENAME'] = $server['SCRIPT_FILENAME'] ?? 'index.php';
 
-        return Request::create($uri, $method, $parameters, $this->state->getCookies(), [], $server, $content);
+        return Request::create($uri, $method, $parameters, $this->state->getCookies(), $this->convertFileInformation($files), $server, $content);
+    }
+
+    // Copied from FileBag and modified to enable test mode
+    protected function convertFileInformation(array $file)
+    {
+        $keys = array_keys($file);
+        sort($keys);
+
+        $fileKeys = ['error', 'name', 'size', 'tmp_name', 'type'];
+        if ($fileKeys === $keys) {
+            if (\UPLOAD_ERR_NO_FILE === $file['error']) {
+                $file = null;
+            } else {
+                $file = new UploadedFile($file['tmp_name'], $file['name'], $file['type'], $file['error'], true);
+            }
+        } else {
+            $file = array_map(fn ($v) => $v instanceof UploadedFile || \is_array($v) ? $this->convertFileInformation($v) : $v, $file);
+            if (array_keys($keys) === $keys) {
+                $file = array_filter($file);
+            }
+        }
+
+        return $file;
     }
 }
