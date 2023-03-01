@@ -33,7 +33,7 @@
     "friendsofphp/php-cs-fixer": "^3.3",
     "phpunit/phpunit": "^9.5",
     "vimeo/psalm": "^4.13",
-    "monolog/monolog": "^2.6",
+    "monolog/monolog": "^3.0",
     "symfony/framework-bundle": "^5.4|^6.2",
     "doctrine/orm": "^2.12"
   },
