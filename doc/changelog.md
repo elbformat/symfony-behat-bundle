@@ -1,5 +1,67 @@
 # Changelog
 
+## v1.5.0
+
+### Restructuring BrowserContext
+As the BrowserContext was getting more and more complex, it is now split into 4 Contexts, sharing the state:
+* HttpContext - Basic request/response operations, including headers and redirects
+* HtmlContext - Querying the DOM for Text/HTML
+* FromContext - Testing, manipulating and submitting forms
+* JsonContext - Json response checks for custom APIs
+
+### Switching LoggingContext
+The LoggingContext was formerly bound to monolog, which is not required in newer symfony applications.
+Instead, we now have a PSR-compatible TestLogger that catches the logs and can be queried in behat.
+
+### Improvements to HttpContext
+* Allow adding HTTP headers to `When I send ... request to ...`
+* Allow non-rfc conform redirects with path instead of URL
+* Allow testing for path only in redirect check
+
+### Improvements to HtmlContext
+* `When I remove attribute ... from ...` to unhide elements
+* `Then I see ... before ...` to check sortings.
+* TODO: Not found tags are not shown with full content, but only the tag
+
+### Improvements to FormContext
+* `When I submit the form with button ...` to distinguish the submit button
+* `When I clear field ...` to remove data from a field
+* `When I check ... checkbox with value ...` to distinguish between multi-options
+* `When I uncheck ... checkbox` to revert checking
+* `When I add an input field ...` to add dynamic collection fields 
+* `When I remove an input field ...` to remove dynamic collection fields 
+* `When I remove a select field ...` to remove dynamic collection fields
+* `Then the form contains a select` to check for options in selects
+* `Then select ... contains option` to check for options in selects
+* `Then select ... does not contain option` to check for options in selects
+* TODO: file upload
+
+### Improvements in AbstractDatabaseContext
+* `assertObject` returns the found object to allow steps to be built upon the results.
+* Support for constructor arguments, including defaults defined in the context.
+* `assertCollectionDoesNotContain` helps negation of collection check
+
+### Added DateContext
+Based on [ClockMock](https://packagist.org/packages/slope-it/clock-mock) and the uopz extension, the context allows you to change the current date inside your tests.
+
+### Added MailerContext in favour of SwiftmailerContext
+As Swiftmailer is deprecated in favour of the symfony mailer, we adapted the context as well.
+
+### Added AbstractApiContext
+This context will help you build your own API context, like the AbstractDatabaseContext
+
+## v1.4.2
+
+* Fix: Comparing a string to a tag with inner html that contains spaces.
+
+## v1.4.1
+
+* Fix: Error, when a monolog handler is tagged.
+
+## v1.4.0
+
+* Support for PHP 8.2 and Symfony 6.2
+
 ## v1.3.0
 ### Added support for multiselect
 `<select multiple>` form fields can now be selected with

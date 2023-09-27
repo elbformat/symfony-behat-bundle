@@ -2,11 +2,9 @@
 
 namespace Elbformat\SymfonyBehatBundle\DependencyInjection;
 
-use Elbformat\SymfonyBehatBundle\Context\BrowserContext;
 use Elbformat\SymfonyBehatBundle\Context\CommandContext;
-use Elbformat\SymfonyBehatBundle\Context\LoggingContext;
-use Elbformat\SymfonyBehatBundle\Context\SwiftmailerContext;
-use Elbformat\SymfonyBehatBundle\Swiftmailer\TestTransport;
+use Elbformat\SymfonyBehatBundle\Context\DateContext;
+use Elbformat\SymfonyBehatBundle\Context\MailerContext;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -24,12 +22,6 @@ class ElbformatSymfonyBehatExtension extends Extension
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
-        $browserContext = new Definition(BrowserContext::class);
-        $browserContext->setAutoconfigured(true);
-        $browserContext->setAutowired(true);
-        $browserContext->setArgument('$projectDir', new Parameter('kernel.project_dir'));
-        $container->setDefinition(BrowserContext::class, $browserContext);
-
         if (class_exists('Symfony\\Bundle\\FrameworkBundle\\Console\\Application')) {
             $commandContext = new Definition(CommandContext::class);
             $commandContext->setAutoconfigured(true);
@@ -37,21 +29,16 @@ class ElbformatSymfonyBehatExtension extends Extension
             $container->setDefinition(CommandContext::class, $commandContext);
         }
 
-        if (class_exists('Monolog\\Handler\\Handler')) {
-            $loggingContext = new Definition(LoggingContext::class);
-            $loggingContext->setAutoconfigured(true);
-            $loggingContext->setAutowired(true);
-            $container->setDefinition(LoggingContext::class, $loggingContext);
+        if (class_exists('Symfony\\Component\\Mailer\\Mailer')) {
+            $mailerContext = new Definition(MailerContext::class);
+            $mailerContext->setAutoconfigured(true);
+            $mailerContext->setAutowired(true);
+            $container->setDefinition(MailerContext::class, $mailerContext);
         }
 
-        if (class_exists('\Swift')) {
-            $testTransport = new Definition(TestTransport::class);
-            $container->setDefinition(TestTransport::class, $testTransport);
-
-            $swiftContext = new Definition(SwiftmailerContext::class);
-            $swiftContext->setAutoconfigured(true);
-            $swiftContext->setAutowired(true);
-            $container->setDefinition(SwiftmailerContext::class, $swiftContext);
+        if (class_exists('SlopeIt\\ClockMock\\ClockMock')) {
+            $dateContext = new Definition(DateContext::class);
+            $container->setDefinition(DateContext::class, $dateContext);
         }
     }
 }

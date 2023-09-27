@@ -1,169 +1,103 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Context;
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
+use Behat\Hook\AfterScenario;
+use Behat\Step\Then;
 use Behat\Testwork\Hook\Scope\AfterTestScope;
 use Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare;
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
-use Symfony\Component\HttpKernel\KernelInterface;
+use Elbformat\SymfonyBehatBundle\Logger\TestLogger;
 
 /**
  * Test interactions with the logger service.
  *
- * @phpstan-import-type LevelName from Logger
  * @author Hannes Giesenow <hannes.giesenow@elbformat.de>
  */
 class LoggingContext implements Context
 {
-    protected KernelInterface $kernel;
-
-    public function __construct(KernelInterface $kernel)
-    {
-        $this->kernel = $kernel;
-    }
-
     /**
      * As we use a testHandler, logs are not available to the output.
      * So we will provide them here, if a scenario fails.
-     *
-     * @AfterScenario
      */
+    #[AfterScenario]
     public function dumpLog(AfterTestScope $event): void
     {
-        if ($event->getTestResult()
-            ->isPassed()) {
+        if ($event->getTestResult()->isPassed()) {
             return;
         }
-        $this->printLogs();
+        echo '  '.$this->getLogsOutput();
     }
 
-    /**
-     * @Then the :log logfile contains a(n) :level entry :text
-     *
-     *  @phpstan-param LevelName $level
-     */
-    public function theLogfileContainsAnEntry(string $log, string $level, string $text, ?TableNode $table = null, bool $dumpLogs = true): void
+    #[Then('the log contains a(n) :level entry :text')]
+    public function theLogContainsAnEntry(string $level, string $text, ?TableNode $table = null, bool $dumpLogs = true): void
     {
-        $logHandler = $this->getLogHandler($log);
-        $levelNum = Logger::toMonologLevel($level);
-        if (!$logHandler->hasRecordThatContains($text, $levelNum)) {
-            if ($dumpLogs) {
-                $this->printLogs($levelNum);
+        $logs = TestLogger::getLogs($level);
+        $tableRows = null !== $table ? $table->getRowsHash() : [];
+        foreach ($logs as [$message, $context]) {
+            if ($message !== $text) {
+                continue;
             }
-            throw new \DomainException('Log entry not found.');
-        }
-        if (null === $table) {
-            return;
-        }
-        $tableRows = $table->getRowsHash();
-        if (!$logHandler->hasRecordThatPasses(function (array $entry) use ($text, $tableRows) {
-            // Message differs
-            if ($entry['message'] !== $text) {
-                return false;
-            }
-
             // Check context
             /** @var string $val */
             foreach ($tableRows as $key => $val) {
                 /** @var mixed $foundVal */
-                $foundVal = $entry['context'][$key] ?? null;
+                $foundVal = $context[$key] ?? null;
 
                 // Context missing
                 if (null === $foundVal) {
-                    return false;
+                    continue 2;
                 }
 
                 // Regex compare
-                if (strpos($val, '~') === 0 && preg_match('/'.preg_quote(substr($val, -1), '/').'/', (string) $foundVal)) {
-                    continue;
+                if (str_starts_with($val, '~') && preg_match('/'.preg_quote(substr($val, -1), '/').'/', (string) $foundVal)) {
+                    break;
                 }
 
                 // Simple Compare
-                if ($foundVal == $val) {
-                    continue;
+                if ($foundVal === $val) {
+                    break;
                 }
 
                 // Array/Json compare
                 if (\is_array($foundVal)) {
                     /** @var array $valArr */
-                    $valArr = json_decode($val, true, 512, JSON_THROW_ON_ERROR);
+                    $valArr = json_decode($val, true, 512, \JSON_THROW_ON_ERROR);
 
                     $dc = new ArrayDeepCompare();
                     if ($dc->arrayEquals($foundVal, $valArr)) {
-                        continue;
+                        break;
                     }
                     echo $dc->getDifference();
 
-                    return false;
+                    continue 2;
                 }
 
-                return false;
+                continue 2;
             }
 
-            return true;
-        }, $levelNum)) {
-            if ($dumpLogs) {
-                $this->printLogs($levelNum);
-            }
-            throw new \DomainException('Log entry found, but with different context.');
-        }
-    }
-
-    /**
-     * @Then the :log logfile doesn't contain any :level entries
-     *
-     * @phpstan-param LevelName $level
-     */
-    public function theLogfileDoesntContainAnyEntries(string $log, string $level): void
-    {
-        $logHandler = $this->getLogHandler($log);
-        if ($logHandler->hasRecords($level)) {
-            $levelNum = Logger::toMonologLevel($level);
-            $this->printLogs($levelNum);
-            throw new \DomainException('Log entries found');
-        }
-    }
-
-    /**
-     * @Then the :log logfile doesn't contain a(n) :level entry :text
-     *
-     * @phpstan-param LevelName $level
-     */
-    public function theLogfileDoesntContainAnEntry(string $log, string $level, string $text, ?TableNode $table = null): void
-    {
-        try {
-            $this->theLogfileContainsAnEntry($log, $level, $text, $table, false);
-        } catch (\DomainException $t) {
             return;
         }
-        $this->printLogs();
-        throw new \DomainException('Entry found');
-    }
-
-
-    protected function getLogHandler(string $log = 'main'): TestHandler
-    {
-        $handler = $this->kernel->getContainer()->get('monolog.handler.'.$log);
-        if (!$handler instanceof TestHandler) {
-            throw new \DomainException(sprintf('No monolog TestHandler found named %s. Is it public?', 'monolog.handler.'.$log));
+        $message = 'Log entry not found.';
+        if ($dumpLogs) {
+            $message .= " Did you mean one of:\n  ";
+            $message .= $this->getLogsOutput($level);
         }
-
-        return $handler;
+        throw new \DomainException($message);
     }
 
-    public function printLogs(int $minLevel = Logger::WARNING): void
+    protected function getLogsOutput(): string
     {
-        $logHandler = $this->getLogHandler();
-        $records = $logHandler->getRecords();
-        foreach (array_reverse($records) as $record) {
-            // Skip everything that isn't at least a the required level
-            if ($record['level'] < $minLevel) {
-                continue;
+        $output = [];
+        foreach (TestLogger::getAllLogs() as $level => $arr) {
+            foreach ($arr as [$message, $context]) {
+                $output[] = strtoupper($level).': '.$message;
             }
-            echo $record['formatted'] ?? '';
         }
+
+        return implode("\n  ", $output);
     }
 }

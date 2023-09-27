@@ -2,6 +2,35 @@ services:
   Elbformat\SymfonyBehatBundle\Application\ApplicationFactory:
     arguments:
       $kernel: '@kernel'
-  Elbformat\SymfonyBehatBundle\Browser\StateFactory: ~
+  Elbformat\SymfonyBehatBundle\Browser\State: ~
+
+  # Will be added dynamically, when symfony/framework-bundle is installed
+  #Elbformat\SymfonyBehatBundle\Context\CommandContext:
+  # Will be added dynamically, when slope-it/clock-mock is installed
+  #Elbformat\SymfonyBehatBundle\Context\CommandContext:
+  Elbformat\SymfonyBehatBundle\Context\FormContext:
+    arguments:
+      $kernel: '@kernel'
+      $state: '@Elbformat\SymfonyBehatBundle\Browser\State'
+      $projectDir: '%kernel.project_dir%'
+      $strComp: '@Elbformat\SymfonyBehatBundle\Helper\StringCompare'
+  Elbformat\SymfonyBehatBundle\Context\HtmlContext:
+    arguments:
+      $state: '@Elbformat\SymfonyBehatBundle\Browser\State'
+      $strComp: '@Elbformat\SymfonyBehatBundle\Helper\StringCompare'
+  Elbformat\SymfonyBehatBundle\Context\HttpContext:
+    arguments:
+      $kernel: '@kernel'
+      $state: '@Elbformat\SymfonyBehatBundle\Browser\State'
+      $strComp: '@Elbformat\SymfonyBehatBundle\Helper\StringCompare'
+  Elbformat\SymfonyBehatBundle\Context\JsonContext:
+    arguments:
+      $state: '@Elbformat\SymfonyBehatBundle\Browser\State'
+      $arrayComp: '@Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare'
+  Elbformat\SymfonyBehatBundle\Context\LoggingContext: ~
+  # Will be added dynamically, when symfony/mailer is installed
+  #Elbformat\SymfonyBehatBundle\Context\MailerContext: ~
+
   Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare: ~
   Elbformat\SymfonyBehatBundle\Helper\StringCompare: ~
+  Elbformat\SymfonyBehatBundle\Logger\TestLogger: ~

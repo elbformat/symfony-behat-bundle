@@ -4,7 +4,7 @@ namespace DependencyInjection;
 
 use Elbformat\SymfonyBehatBundle\Context\BrowserContext;
 use Elbformat\SymfonyBehatBundle\Context\CommandContext;
-use Elbformat\SymfonyBehatBundle\Context\LoggingContext;
+use Elbformat\SymfonyBehatBundle\Context\MonologContext;
 use Elbformat\SymfonyBehatBundle\DependencyInjection\ElbformatSymfonyBehatExtension;
 use Elbformat\SymfonyBehatBundle\ElbformatSymfonyBehatBundle;
 use PHPUnit\Framework\TestCase;
@@ -31,8 +31,8 @@ class ElbformatSymfonyBehatExtensionTest extends TestCase
             [CommandContext::class,$this->callback(function (Definition $def) {
                 return CommandContext::class === $def->getClass();
             })],
-            [LoggingContext::class,$this->callback(function (Definition $def) {
-                return LoggingContext::class === $def->getClass();
+            [MonologContext::class,$this->callback(function (Definition $def) {
+                return MonologContext::class === $def->getClass();
             })]
         );
 

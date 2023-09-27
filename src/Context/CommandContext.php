@@ -11,10 +11,8 @@ use Behat\Step\When;
 use DomainException;
 use Elbformat\SymfonyBehatBundle\Application\ApplicationFactory;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\BufferedOutput;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * Interaction with a symfony console command.
@@ -24,7 +22,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class CommandContext implements Context
 {
     private ?string $output = null;
-    private ?int $returnCode= null;
+    private ?int $returnCode = null;
 
     public function __construct(
         protected ApplicationFactory $appFactory,

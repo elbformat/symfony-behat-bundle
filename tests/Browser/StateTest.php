@@ -9,6 +9,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class StateTest extends TestCase
 {
+    public function testReset(): void
+    {
+        $state = new State();
+        $state->update(Request::create('/'), new Response('', 200, ['set-cookie' => ['hello=world']]));
+        $state->reset();
+        $this->assertCount(0, $state->getCookies());
+        $this->expectExceptionMessage('No request was made yet');
+        $state->getRequest();
+    }
+
     public function testUpdateCookies(): void
     {
         $state = new State();
@@ -30,18 +40,5 @@ class StateTest extends TestCase
         $state = new State();
         $this->expectExceptionMessage('No request was made yet');
         $state->getRequest();
-    }
-
-    public function testGetLastFormNotSet(): void
-    {
-        $state = new State();
-        $this->expectExceptionMessage('No form was queried yet');
-        $state->getLastForm();
-    }
-    public function testGetLastFormCrawlerNotSet(): void
-    {
-        $state = new State();
-        $this->expectExceptionMessage('No form was queried yet');
-        $state->getLastFormCrawler();
     }
 }

@@ -12,13 +12,7 @@ vendor/bin/php-cs-fixer fix --diff src
 vendor/bin/php-cs-fixer fix --diff tests
 # Check code
 vendor/bin/psalm
-# Enable optional bundles
-composer require --dev -W symfony/swiftmailer-bundle:"^3.5"
-# Try upgraded monolog version
-composer require --dev -W monolog/monolog:"^3.0"
 ```
-
-
 
 Enable xdebug inside the container
 ```bash
