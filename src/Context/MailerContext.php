@@ -9,30 +9,19 @@ use Behat\Gherkin\Node\PyStringNode;
 use Behat\Hook\BeforeScenario;
 use Behat\Step\Then;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
-use Elbformat\SymfonyBehatBundle\Mailer\Attachment;
 use Elbformat\SymfonyBehatBundle\Mailer\TestTransport;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mime\Email;
 
 class MailerContext implements Context
 {
     protected Email|null $lastMail = null;
 
-    protected Attachment|null $lastAttachment = null;
-
-    /** @var Email[]|null */
-    protected ?array $mails = null;
-
-    protected KernelInterface $kernel;
-
-    protected string $mailPath;
-
-    public function __construct(KernelInterface $kernel)
+    public function __construct(
+        protected KernelInterface $kernel,
+        protected StringCompare $strComp,
+    )
     {
-        $this->kernel = $kernel;
     }
 
     /* Purge the spool folder between each scenario. */
@@ -47,7 +36,7 @@ class MailerContext implements Context
     {
         $mails = TestTransport::getMails();
         foreach ($mails as $mail) {
-            if ($subject !== $mail->getEnvelope()->getSubject()) {
+            if ($subject !== $mail->getSubject()) {
                 continue;
             }
             foreach ($mail->getTo() as $to) {
@@ -66,7 +55,7 @@ class MailerContext implements Context
     #[Then('no e-mail is being sent to :recipient with subject :subject')]
     public function noEmailIsBeingSent(?string $recipient = null, ?string $subject = null): void
     {
-        $mails = $this->getMails();
+        $mails = TestTransport::getMails();
         foreach ($mails as $mail) {
             if ($subject && $subject !== $mail->getSubject()) {
                 continue;
@@ -86,8 +75,7 @@ class MailerContext implements Context
     {
         $mailText = $this->getLastMail()->getHtmlBody();
         $textToFind = $text ?? ($stringNode ? $stringNode->getRaw() : '');
-        $strcomp = new StringCompare();
-        if (!$strcomp->stringContains($mailText, $textToFind)) {
+        if (!$this->strComp->stringContains($mailText, $textToFind)) {
             throw new \DomainException($mailText);
         }
     }
@@ -98,8 +86,7 @@ class MailerContext implements Context
     {
         $mailText = $this->getLastMail()->getHtmlBody();
         $textToFind = $text ?? ($stringNode ? $stringNode->getRaw() : '');
-        $strcomp = new StringCompare();
-        if ($strcomp->stringContains($mailText, $textToFind)) {
+        if ($this->strComp->stringContains($mailText, $textToFind)) {
             throw new \DomainException('Text found!');
         }
     }
@@ -126,37 +113,37 @@ class MailerContext implements Context
         }
     }
 
-    #[Then('the e-mail has an attachment :name')]
-    public function theEMailHasAnAttachment(string $name): void
-    {
-        $attachments = $this->getLastMail()->getAttachments();
-        foreach ($attachments as $attachment) {
-            $filename = $attachment->getPreparedHeaders()->getHeaderParameter('Content-Disposition', 'filename');
-            if ($name === $filename) {
-                $this->lastAttachment = new Attachment($filename, $attachment->getBody());
-
-                return;
-            }
-        }
-        throw new \DomainException(sprintf('No attachment with name %s found.', $name));
-    }
-
-    #[Then('the e-mail attachment equals fixture :fixture')]
-    public function theEMailAttachmentEqualsFixture(string $fixture): void
-    {
-        if (!file_exists($fixture)) {
-            throw new \DomainException('Fixture not found');
-        }
-
-        $algo = 'md5';
-        $attachmentPath = $this->mailPath.'/'.$this->lastAttachment->getFilename();
-        file_put_contents($attachmentPath, $this->lastAttachment->getBody());
-
-        if (hash_file($algo, $attachmentPath) !== hash_file($algo, $fixture)) {
-            unlink($attachmentPath);
-            throw new \DomainException(sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->getFilename()));
-        }
-    }
+//    #[Then('the e-mail has an attachment :name')]
+//    public function theEMailHasAnAttachment(string $name): void
+//    {
+//        $attachments = $this->getLastMail()->getAttachments();
+//        foreach ($attachments as $attachment) {
+//            $filename = $attachment->getPreparedHeaders()->getHeaderParameter('Content-Disposition', 'filename');
+//            if ($name === $filename) {
+//                $this->lastAttachment = new Attachment($filename, $attachment->getBody());
+//
+//                return;
+//            }
+//        }
+//        throw new \DomainException(sprintf('No attachment with name %s found.', $name));
+//    }
+//
+//    #[Then('the e-mail attachment equals fixture :fixture')]
+//    public function theEMailAttachmentEqualsFixture(string $fixture): void
+//    {
+//        if (!file_exists($fixture)) {
+//            throw new \DomainException('Fixture not found');
+//        }
+//
+//        $algo = 'md5';
+//        $attachmentPath = $this->mailPath.'/'.$this->lastAttachment->getFilename();
+//        file_put_contents($attachmentPath, $this->lastAttachment->getBody());
+//
+//        if (hash_file($algo, $attachmentPath) !== hash_file($algo, $fixture)) {
+//            unlink($attachmentPath);
+//            throw new \DomainException(sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->getFilename()));
+//        }
+//    }
 
     /** @param Email[] $mails */
     protected function getMailsDump(array $mails): string
@@ -187,27 +174,5 @@ class MailerContext implements Context
         }
 
         return $this->lastMail;
-    }
-
-    /** @return Email[] */
-    protected function getMails(): array
-    {
-        if (null !== $this->mails) {
-            return $this->mails;
-        }
-        $finder = new Finder();
-        $finder->files()->in($this->mailPath);
-        $mails = [];
-        foreach ($finder as $file) {
-            /** @var SentMessage $sentMessage */
-            $sentMessage = unserialize($file->getContents());
-            if (!$sentMessage->getOriginalMessage() instanceof Email) {
-                continue;
-            }
-            $mails[] = $sentMessage->getOriginalMessage();
-        }
-        $this->mails = $mails;
-
-        return $mails;
     }
 }
