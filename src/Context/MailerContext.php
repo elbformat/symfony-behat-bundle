@@ -10,6 +10,7 @@ use Behat\Hook\BeforeScenario;
 use Behat\Step\Then;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
 use Elbformat\SymfonyBehatBundle\Mailer\Attachment;
+use Elbformat\SymfonyBehatBundle\Mailer\TestTransport;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -29,30 +30,24 @@ class MailerContext implements Context
 
     protected string $mailPath;
 
-    public function __construct(KernelInterface $kernel, string $mailerDsn)
+    public function __construct(KernelInterface $kernel)
     {
         $this->kernel = $kernel;
-        $parsedDsn = parse_url($mailerDsn);
-        parse_str($parsedDsn['query'] ?? '', $query);
-        $this->mailPath = $query['folder'] ?? 'var/mails';
     }
 
     /* Purge the spool folder between each scenario. */
     #[BeforeScenario]
     public function reset(): void
     {
-        $filesystem = new Filesystem();
-        $filesystem->remove($this->mailPath);
-        $filesystem->mkdir($this->mailPath);
-        $this->mails = null;
+        TestTransport::reset();
     }
 
     #[Then('an e-mail is being sent to :recipient with subject :subject')]
     public function anEmailIsBeingSentToWithSubject(string $recipient, string $subject): void
     {
-        $mails = $this->getMails();
+        $mails = TestTransport::getMails();
         foreach ($mails as $mail) {
-            if ($subject !== $mail->getSubject()) {
+            if ($subject !== $mail->getEnvelope()->getSubject()) {
                 continue;
             }
             foreach ($mail->getTo() as $to) {

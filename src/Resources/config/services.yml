@@ -1,4 +1,6 @@
 services:
+  _defaults:
+    autoconfigure: true
   Elbformat\SymfonyBehatBundle\Application\ApplicationFactory:
     arguments:
       $kernel: '@kernel'
@@ -34,3 +36,6 @@ services:
   Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare: ~
   Elbformat\SymfonyBehatBundle\Helper\StringCompare: ~
   Elbformat\SymfonyBehatBundle\Logger\TestLogger: ~
+  Elbformat\SymfonyBehatBundle\Mailer\TestTransportFactory:
+    tags:
+      - { name: mailer.transport_factory }

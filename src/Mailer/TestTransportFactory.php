@@ -13,15 +13,15 @@ class TestTransportFactory extends AbstractTransportFactory
 {
     public function create(Dsn $dsn): TransportInterface
     {
-        if ('file' === $dsn->getScheme()) {
-            return new TestTransport($dsn->getOption('folder'));
+        if ('test' === $dsn->getScheme()) {
+            return new TestTransport();
         }
 
-        throw new UnsupportedSchemeException($dsn, 'file', $this->getSupportedSchemes());
+        throw new UnsupportedSchemeException($dsn, 'test', $this->getSupportedSchemes());
     }
 
     protected function getSupportedSchemes(): array
     {
-        return ['file'];
+        return ['test'];
     }
 }

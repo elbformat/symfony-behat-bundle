@@ -9,7 +9,6 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\DependencyInjection\Parameter;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
@@ -32,7 +31,6 @@ class ElbformatSymfonyBehatExtension extends Extension
         if (class_exists('Symfony\\Component\\Mailer\\Mailer')) {
             $mailerContext = new Definition(MailerContext::class);
             $mailerContext->setAutoconfigured(true);
-            $mailerContext->setAutowired(true);
             $container->setDefinition(MailerContext::class, $mailerContext);
         }
 
