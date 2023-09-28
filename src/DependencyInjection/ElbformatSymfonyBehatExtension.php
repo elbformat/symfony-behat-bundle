@@ -31,7 +31,7 @@ class ElbformatSymfonyBehatExtension extends Extension
         if (class_exists('Symfony\\Component\\Mailer\\Mailer')) {
             $mailerContext = new Definition(MailerContext::class);
             $mailerContext->setAutoconfigured(true);
-            $commandContext->setAutowired(true);
+            $mailerContext->setAutowired(true);
             $container->setDefinition(MailerContext::class, $mailerContext);
         }
 

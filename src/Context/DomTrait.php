@@ -11,7 +11,7 @@ trait DomTrait
 
     protected function getCrawler(): Crawler
     {
-        return new Crawler($this->state->getResponseContent(), $this->state->getRequest()->getUri());
+        return $this->state->getCrawler();
     }
 
     protected function createNotFoundException(string $what, ?Crawler $fallbacks = null): \DomainException

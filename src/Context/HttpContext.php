@@ -124,7 +124,7 @@ class HttpContext implements Context
             foreach ($headers as $key => $values) {
                 if (strtolower((string)$key) === strtolower($expectedHeader)) {
                     foreach ($values as $value) {
-                        if ($this->strComp->stringContains($value, $expectedValue)) {
+                        if ($this->strComp->stringEquals($value, $expectedValue)) {
                             continue 3;
                         }
                     }
@@ -158,6 +158,9 @@ class HttpContext implements Context
                 if (str_starts_with($url, '/')) {
                     $parts = parse_url($val0);
                     $val0 = $parts['path'];
+                    if ('' !== ($parts['query'] ?? '')) {
+                        $val0.='?'.$parts['query'];
+                    }
                 }
                 if (!$this->strComp->stringEquals($val0, $url)) {
                     throw new \DomainException('Wrong redirect target: '.$val0);

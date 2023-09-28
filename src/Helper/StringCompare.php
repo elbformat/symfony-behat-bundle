@@ -26,7 +26,7 @@ class StringCompare
         // Regex match
         if (str_starts_with($expected, '~')) {
             $regex = substr($expected, 1);
-            // Make it matche the whole string only
+            // Make it match the whole string only
             if (!str_starts_with($regex, '^')) {
                 $regex = '^'.$regex;
             }
