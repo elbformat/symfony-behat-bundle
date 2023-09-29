@@ -65,7 +65,7 @@ class MailerContext implements Context
             foreach (array_keys($mail->getTo()) as $to) {
                 if (!$recipient || $to === $recipient) {
                     // Match
-                    throw new \DomainException('Mails found: '.$this->getMailsDump($mails));
+                    throw new \DomainException('Mails found: '.$this->getMailsDump([$mail]));
                 }
             }
         }
@@ -75,7 +75,7 @@ class MailerContext implements Context
     #[Then('the e-mail contains :text')]
     public function theEMailContains(string $text = null, PyStringNode $stringNode = null): void
     {
-        $mailText = $this->getLastMail()->getHtmlBody();
+        $mailText = (string) $this->getLastMail()->getHtmlBody();
         $textToFind = $text ?? ($stringNode ? $stringNode->getRaw() : '');
         if (!$this->strComp->stringContains($mailText, $textToFind)) {
             throw new \DomainException($mailText);
@@ -88,7 +88,7 @@ class MailerContext implements Context
     {
         $mailText = $this->getLastMail()->getHtmlBody();
         $textToFind = $text ?? ($stringNode ? $stringNode->getRaw() : '');
-        if ($this->strComp->stringContains($mailText, $textToFind)) {
+        if ($this->strComp->stringContains((string) $mailText, $textToFind)) {
             throw new \DomainException('Text found!');
         }
     }
@@ -108,10 +108,9 @@ class MailerContext implements Context
     #[Then('the e-mail is being sent from :from')]
     public function theEMailIsBeingSentFrom(string $from): void
     {
-        /** @var array|string $realyFrom */
-        $realyFrom = $this->getLastMail()->getSender()->getAddress();
-        if ($realyFrom !== $from) {
-            throw new \DomainException((string)$realyFrom);
+        $reallyFrom = $this->getLastMail()->getSender()?->getAddress() ?? '';
+        if ($reallyFrom !== $from) {
+            throw new \DomainException($reallyFrom);
         }
     }
 
@@ -138,10 +137,13 @@ class MailerContext implements Context
         }
         $fixtureHash = hash_file('md5', $this->projectDir.'/'.$fixture);
 
+        if (null === $this->lastAttachment) {
+            throw new \DomainException('Please check the attachment first with "the e-mail has an attachment"');
+        }
         $attachmentHash = md5($this->lastAttachment->bodyToString());
 
         if ($fixtureHash !== $attachmentHash) {
-            throw new \DomainException(sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->getFilename()));
+            throw new \DomainException(sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->getFilename() ?? ''));
         }
     }
 
@@ -161,7 +163,7 @@ class MailerContext implements Context
             foreach ($mail->getTo() as $to) {
                 $tos[] = $to->getAddress();
             }
-            $mailText[] = sprintf("From: %s\n  To: %s\n  Subject: %s", implode(',', $froms), implode(',', $tos), $mail->getSubject());
+            $mailText[] = sprintf("From: %s\n  To: %s\n  Subject: %s", implode(',', $froms), implode(',', $tos), $mail->getSubject() ?? '');
         }
 
         return implode("\n  ---\n  ", $mailText);

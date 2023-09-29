@@ -42,7 +42,7 @@ class AbstractApiContextTest extends TestCase
 
     public function testAddMockWithContent(): void
     {
-        $this->context->addMock('/',rawHttp: new PyStringNode(['Lorem Ipsum'],0));
+        $this->context->addMock('/', rawHttp: new PyStringNode(['Lorem Ipsum'], 0));
         $mcc = new MockClientCallback();
         $mcc->__invoke('GET', '/');
         $rq = MockClientCallback::getRequest('GET', '/');
@@ -58,7 +58,7 @@ Content-Type: application/json
 {"text":"hello world"}
 EOL;
 
-        $this->context->addMock('/',rawHttp: new PyStringNode([$rawHttp],0));
+        $this->context->addMock('/', rawHttp: new PyStringNode([$rawHttp], 0));
         $mcc = new MockClientCallback();
         $mcc->__invoke('GET', '/');
         $rq = MockClientCallback::getRequest('GET', '/');

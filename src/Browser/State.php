@@ -46,7 +46,7 @@ class State
 
     public function getResponseContent(): string
     {
-        return (string)$this->response->getContent();
+        return (string)$this->getResponse()->getContent();
     }
 
     public function getRequest(): Request

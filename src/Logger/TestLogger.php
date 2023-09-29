@@ -9,21 +9,28 @@ use Psr\Log\LogLevel;
 
 class TestLogger extends AbstractLogger
 {
+    /** @var array<string,LogEntry[]> */
     protected static array $logs = [];
 
-    public function log($level, \Stringable|string $message, array $context = []): void
+    /** @param array $context */
+    public function log(mixed $level, \Stringable|string $message, array $context = []): void
     {
+        if (!is_string($level)) {
+            $level = LogLevel::ERROR;
+        }
         if (LogLevel::DEBUG === $level || LogLevel::INFO === $level) {
             return;
         }
-        self::$logs[$level][] = [(string) $message, $context];
+        self::$logs[$level][] = new LogEntry((string) $message, $context);
     }
 
+    /** @return LogEntry[] */
     public static function getLogs(string $level): array
     {
         return self::$logs[$level] ?? [];
     }
 
+    /** @return array<string,LogEntry[]> */
     public static function getAllLogs(): array
     {
         return self::$logs;

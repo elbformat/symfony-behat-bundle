@@ -25,12 +25,15 @@ trait RequestTrait
     {
         $server['SCRIPT_FILENAME'] = $server['SCRIPT_FILENAME'] ?? 'index.php';
 
+        /** @psalm-suppress MixedArgument */
         return Request::create($uri, $method, $parameters, $this->state->getCookies(), $this->convertFileInformation($files) ?? [], $server, $content);
     }
 
     // Copied from FileBag and modified to enable test mode
-    protected function convertFileInformation(array $file)
+    /** @psalm-suppress all */
+    protected function convertFileInformation($file)
     {
+        /** @psalm-suppress MixedArgument */
         $keys = array_keys($file);
         sort($keys);
 
@@ -39,10 +42,11 @@ trait RequestTrait
             if (\UPLOAD_ERR_NO_FILE === $file['error']) {
                 $file = null;
             } else {
+                /** @psalm-suppress MixedArgument */
                 $file = new UploadedFile($file['tmp_name'], $file['name'], $file['type'], $file['error'], true);
             }
         } else {
-            $file = array_map(fn ($v) => $v instanceof UploadedFile || \is_array($v) ? $this->convertFileInformation($v) : $v, $file);
+            $file = array_map(fn ($v): mixed => $v instanceof UploadedFile || \is_array($v) ? $this->convertFileInformation($v) : $v, $file);
             if (array_keys($keys) === $keys) {
                 $file = array_filter($file);
             }

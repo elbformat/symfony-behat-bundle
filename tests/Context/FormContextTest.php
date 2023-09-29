@@ -71,7 +71,7 @@ class FormContextTest extends TestCase
         $this->kernel->method('handle')->willReturn(new Response());
         $this->formContext->iSubmitTheForm();
         $rq = $this->state->getRequest();
-        $this->assertSame('an',$rq->query->all()['form']['check']);
+        $this->assertSame('an', $rq->query->all()['form']['check']);
     }
 
     public function testICheckCheckboxWrongType(): void
@@ -142,7 +142,7 @@ class FormContextTest extends TestCase
         $this->formContext->iSubmitTheForm();
         $rq = $this->state->getRequest();
         $uplFile = $rq->files->get('form')['file'];
-        $this->assertInstanceOf(UploadedFile::class,$uplFile);
+        $this->assertInstanceOf(UploadedFile::class, $uplFile);
         $this->assertEquals('1px.jpg', $uplFile->getClientOriginalName());
     }
 

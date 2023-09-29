@@ -41,7 +41,9 @@ class HtmlContext implements Context
             throw $this->createNotFoundException('DOM Element', $crawler->filterXPath($xpath));
         }
         foreach ($element as $el) {
-            $el->removeAttribute($attr);
+            if ($el instanceof \DOMElement) {
+                $el->removeAttribute($attr);
+            }
         }
     }
 

@@ -112,10 +112,13 @@ class FormContext implements Context
     public function iAddAnInputField(string $name, ?TableNode $table = null): void
     {
         $form = $this->getLastForm();
-        $newInput = $form->getNode()->ownerDocument->createElement('input');
+        $newInput = $form->getNode()->ownerDocument?->createElement('input');
+        if (! $newInput instanceof DOMElement) {
+            throw new \DomainException('Error creating element');
+        }
         $newInput->setAttribute('name', $name);
         if (null !== $table) {
-            foreach ($table->getRowsHash() as $key => $val) {
+            foreach ($this->getTableData($table) as $key => $val) {
                 $newInput->setAttribute($key, $val);
             }
         }
@@ -127,6 +130,9 @@ class FormContext implements Context
     public function iRemoveAnInputField(string $name): void
     {
         $inputNode = $this->getLastFormCrawler()->filterXPath("//input[@name='".$name."']")->getNode(0);
+        if (!$inputNode instanceof DOMElement) {
+            throw new \DomainException('Field not found');
+        }
         $inputNode->remove();
         $this->mutateForm();
     }
@@ -135,6 +141,9 @@ class FormContext implements Context
     public function iRemoveASelectField(string $name): void
     {
         $inputNode = $this->getLastFormCrawler()->filterXPath("//select[@name='".$name."']")->getNode(0);
+        if (!$inputNode instanceof DOMElement) {
+            throw new \DomainException('Field not found');
+        }
         $inputNode->remove();
         $this->mutateForm();
     }
@@ -207,11 +216,11 @@ class FormContext implements Context
         } else {
             $options = $crawler->filterXpath(sprintf('//select[@name="%s"]/option', $select));
         }
-        /** @var DOMElement $input */
+        /** @var DOMElement $option */
         foreach ($options as $option) {
             foreach ($this->getTableData($tableNode) as $attrName => $attrVal) {
                 // Attributes didn't match -> try the next one
-                if (!$this->strComp->stringEquals($input->getAttribute($attrName), $attrVal)) {
+                if (!$this->strComp->stringEquals($option->getAttribute($attrName), $attrVal)) {
                     continue 2;
                 }
             }
@@ -253,7 +262,7 @@ class FormContext implements Context
 
     protected function getChoiceField(string $name, ?string $value = null): ChoiceFormField
     {
-        $formField = $this->getFormField($name);
+        $formField = $this->getLastForm()->get($name);
         // Found a single field
         if ($formField instanceof ChoiceFormField) {
             return $formField;
@@ -266,6 +275,7 @@ class FormContext implements Context
             if (!$formFiel instanceof ChoiceFormField) {
                 continue;
             }
+            /** @psalm-suppress InternalMethod */
             if ($value === $formFiel->availableOptionValues()[0]) {
                 return $formFiel;
             }

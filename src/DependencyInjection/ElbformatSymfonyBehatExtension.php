@@ -32,6 +32,7 @@ class ElbformatSymfonyBehatExtension extends Extension
             $mailerContext = new Definition(MailerContext::class);
             $mailerContext->setAutoconfigured(true);
             $mailerContext->setAutowired(true);
+            $mailerContext->setArgument('$projectDir', '%kernel.project_dir%');
             $container->setDefinition(MailerContext::class, $mailerContext);
         }
 

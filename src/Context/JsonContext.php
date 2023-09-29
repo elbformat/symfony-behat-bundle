@@ -8,10 +8,14 @@ use Behat\Step\Then;
 use Behat\Step\When;
 use Elbformat\SymfonyBehatBundle\Browser\State;
 use Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 class JsonContext implements Context
 {
+    use RequestTrait;
+
     public function __construct(
+        protected KernelInterface $kernel,
         protected ArrayDeepCompare $arrayComp,
         protected State $state,
     ) {
@@ -32,6 +36,7 @@ class JsonContext implements Context
                 }
             }
         }
+        /** @psalm-suppress MixedArgument false positive? */
         $this->doRequest($this->buildRequest($url, $method, $server, $rawData ?? null));
     }
 
@@ -40,7 +45,13 @@ class JsonContext implements Context
     {
         $content = $this->state->getResponseContent();
         $expected = json_decode($string->getRaw(), true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($expected)) {
+            throw new \DomainException(sprintf('Only arrays can be matched. Got %s', gettype($expected)));
+        }
         $got = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($got)) {
+            throw new \DomainException(sprintf('Only arrays can be matched. Got %s', gettype($got)));
+        }
         if ($this->arrayComp->arrayEquals($expected, $got)) {
             return;
         }

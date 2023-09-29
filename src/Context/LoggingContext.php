@@ -37,11 +37,12 @@ class LoggingContext implements Context
     {
         $logs = TestLogger::getLogs($level);
         $tableRows = null !== $table ? $table->getRowsHash() : [];
-        foreach ($logs as [$message, $context]) {
-            if ($message !== $text) {
+        foreach ($logs as $logEntry) {
+            if ($logEntry->getMessage() !== $text) {
                 continue;
             }
             // Check context
+            $context = $logEntry->getContext();
             /** @var string $val */
             foreach ($tableRows as $key => $val) {
                 /** @var mixed $foundVal */
@@ -84,7 +85,7 @@ class LoggingContext implements Context
         $message = 'Log entry not found.';
         if ($dumpLogs) {
             $message .= " Did you mean one of:\n  ";
-            $message .= $this->getLogsOutput($level);
+            $message .= $this->getLogsOutput();
         }
         throw new \DomainException($message);
     }
@@ -93,8 +94,8 @@ class LoggingContext implements Context
     {
         $output = [];
         foreach (TestLogger::getAllLogs() as $level => $arr) {
-            foreach ($arr as [$message, $context]) {
-                $output[] = strtoupper($level).': '.$message;
+            foreach ($arr as $logEntry) {
+                $output[] = strtoupper($level).': '.$logEntry->getMessage();
             }
         }
 

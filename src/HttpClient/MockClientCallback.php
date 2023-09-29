@@ -9,7 +9,9 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class MockClientCallback
 {
+    /** @var array<string,array> */
     protected static array $requests = [];
+    /** @var array<string,ResponseInterface> */
     protected static array $responses = [];
 
     public function __invoke(string $method, string $url, array $options = []): ResponseInterface
@@ -46,6 +48,7 @@ class MockClientCallback
         return self::$requests[$key];
     }
 
+    /** @return array<string,array> */
     public static function getRequests(): array
     {
         return self::$requests;

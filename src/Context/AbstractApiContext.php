@@ -30,7 +30,7 @@ abstract class AbstractApiContext implements Context
             $text = $e->getMessage();
             $text .= " Found: \n";
             $requests = MockClientCallback::getRequests();
-            foreach ($requests as $key => $options) {
+            foreach (array_keys($requests) as $key) {
                 [$method, $url] = explode('/', $key, 2);
                 $text .= sprintf('%s %s', $method, $url);
             }
@@ -39,7 +39,13 @@ abstract class AbstractApiContext implements Context
         }
         if (null !== $content) {
             $expected = json_decode($content->getRaw(), true, flags: JSON_THROW_ON_ERROR);
-            $got = json_decode($data['body'], true, flags: JSON_THROW_ON_ERROR);
+            if (!is_array($expected)) {
+                throw new \DomainException(sprintf('Only arrays can be matched. Got %s', gettype($expected)));
+            }
+            $got = json_decode((string)$data['body'], true, flags: JSON_THROW_ON_ERROR);
+            if (!is_array($got)) {
+                throw new \DomainException(sprintf('Only arrays can be matched. Got %s', gettype($got)));
+            }
             $dc = new ArrayDeepCompare();
             if (!$dc->arrayEquals($got, $expected)) {
                 $gotJson = json_encode($got, JSON_PRETTY_PRINT);

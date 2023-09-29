@@ -80,6 +80,7 @@ class HttpContext implements Context
                 }
             }
         }
+        /** @psalm-suppress MixedArgument false positive */
         $this->doRequest($this->buildRequest($url, $method, $server, $rawData ?? null));
     }
 
@@ -151,14 +152,15 @@ class HttpContext implements Context
         }
 
         foreach ($response->headers->all() as $key => $val) {
-            if ('location' === strtolower((string)$key)) {
+            if ('location' === strtolower($key)) {
                 $val0 = ($val[0] ?? '');
                 // Compare only the path
                 if (str_starts_with($url, '/')) {
                     $parts = parse_url($val0);
-                    $val0 = $parts['path'];
-                    if ('' !== ($parts['query'] ?? '')) {
-                        $val0.='?'.$parts['query'];
+                    $val0 = $parts['path'] ?? '';
+                    $query = $parts['query'] ?? '';
+                    if ('' !== $query) {
+                        $val0 .= '?'.$query;
                     }
                 }
                 if (!$this->strComp->stringEquals($val0, $url)) {

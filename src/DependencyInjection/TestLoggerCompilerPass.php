@@ -15,6 +15,6 @@ class TestLoggerCompilerPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        $container->setAlias('logger',TestLogger::class);
+        $container->setAlias('logger', TestLogger::class);
     }
 }

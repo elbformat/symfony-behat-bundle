@@ -98,6 +98,9 @@ abstract class AbstractDatabaseContext implements Context
         $collection->add($entity2);
         if (null !== $reverseRelationName) {
             $collection2 = $pa->getValue($entity2, $reverseRelationName);
+            if (!$collection2 instanceof Collection) {
+                throw new \DomainException(sprintf('Property "%s" is not a collection', $reverseRelationName));
+            }
             $collection2->add($entity1);
         }
         $this->em->flush();
@@ -166,6 +169,8 @@ abstract class AbstractDatabaseContext implements Context
             throw new \DomainException(sprintf('%s(%d) not in collection.', $containingClass, $containerId));
         }
     }
+
+    /** @param class-string $containingClass */
     protected function assertCollectionDoesNotContain(int $containerId, string $containingClass, int $containingId, string $relation): void
     {
         try {
@@ -331,6 +336,10 @@ abstract class AbstractDatabaseContext implements Context
         return $type instanceof \ReflectionNamedType ? $type->getName() : null;
     }
 
+    /**
+     * @param array<string,string> $data
+     * @return array<string,mixed>
+     */
     protected function getConstructorArgsFromData(array $data): array
     {
         $refl = new \ReflectionClass($this->getClassName());
@@ -342,6 +351,7 @@ abstract class AbstractDatabaseContext implements Context
         $constructorParams = [];
         foreach ($constructorArgs as $arg) {
             $argName = $arg->getName();
+            /** @psalm-suppress MixedAssignment */
             $constructorParams[$argName] = $this->mapTableValue($argName, $data[$argName] ?? $this->getDefaultValue($argName));
         }
 
