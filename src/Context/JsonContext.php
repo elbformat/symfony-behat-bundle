@@ -5,6 +5,7 @@ namespace Elbformat\SymfonyBehatBundle\Context;
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\Step\Then;
+use Behat\Step\When;
 use Elbformat\SymfonyBehatBundle\Browser\State;
 use Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare;
 
@@ -14,6 +15,24 @@ class JsonContext implements Context
         protected ArrayDeepCompare $arrayComp,
         protected State $state,
     ) {
+    }
+
+    #[When('I make a :method request with json data to :url')]
+    public function iMakeARequestWithJsonDataTo(string $method, string $url, ?PyStringNode $data = null): void
+    {
+        $server = [];
+        if ($data) {
+            $rawData = $data->getRaw();
+            $server['CONTENT_TYPE'] = 'application/json';
+            if (str_contains($rawData, "\n\n")) {
+                [$headers,$rawData] = explode("\n\n", $rawData);
+                foreach (explode("\n", $headers) as $headerRow) {
+                    [$headerKey,$headerValue] = explode(':', $headerRow, 2);
+                    $server['HTTP_'.strtoupper($headerKey)] = trim($headerValue);
+                }
+            }
+        }
+        $this->doRequest($this->buildRequest($url, $method, $server, $rawData ?? null));
     }
 
     #[Then('the response json matches')]

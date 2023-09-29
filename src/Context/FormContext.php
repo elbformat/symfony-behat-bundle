@@ -95,26 +95,6 @@ class FormContext implements Context
         $select->select($value);
     }
 
-    #[When('I submit the form')]
-    #[When('I submit the form with button :buttonName')]
-    public function iSubmitTheForm(?string $buttonName = null): void
-    {
-        $form = $this->getLastForm();
-        $values = $form->getPhpValues();
-        if (null !== $buttonName) {
-            $buttonTag = $this->getCrawler()->filterXpath(sprintf('//button[@name="%s"]', $buttonName));
-            $buttonValue = $buttonTag->attr('value');
-
-            $qs = http_build_query([$buttonName => $buttonValue ?? ''], '', '&');
-            if (!empty($qs)) {
-                parse_str($qs, $expandedValue);
-                $values = array_merge_recursive($values, $expandedValue);
-            }
-        }
-
-        $this->doRequest($this->buildRequest($form->getUri(), $form->getMethod(), [], null, $values, $form->getPhpFiles()));
-    }
-
     #[When('I select :fixture upload at :name')]
     public function iSelectUploadAt(string $fixture, string $name): void
     {
@@ -157,6 +137,26 @@ class FormContext implements Context
         $inputNode = $this->getLastFormCrawler()->filterXPath("//select[@name='".$name."']")->getNode(0);
         $inputNode->remove();
         $this->mutateForm();
+    }
+
+    #[When('I submit the form')]
+    #[When('I submit the form with button :buttonName')]
+    public function iSubmitTheForm(?string $buttonName = null): void
+    {
+        $form = $this->getLastForm();
+        $values = $form->getPhpValues();
+        if (null !== $buttonName) {
+            $buttonTag = $this->getCrawler()->filterXpath(sprintf('//button[@name="%s"]', $buttonName));
+            $buttonValue = $buttonTag->attr('value');
+
+            $qs = http_build_query([$buttonName => $buttonValue ?? ''], '', '&');
+            if (!empty($qs)) {
+                parse_str($qs, $expandedValue);
+                $values = array_merge_recursive($values, $expandedValue);
+            }
+        }
+
+        $this->doRequest($this->buildRequest($form->getUri(), $form->getMethod(), [], null, $values, $form->getPhpFiles()));
     }
 
     #[Then('the form contains an input field')]
@@ -241,6 +241,9 @@ class FormContext implements Context
     protected function getFormField(string $name): FormField
     {
         $formField = $this->getLastForm()->get($name);
+        if (is_array($formField)) {
+            throw new \DomainException(sprintf('%s is not a single form field.', $name));
+        }
         if (!$formField instanceof FormField) {
             throw new \DomainException(sprintf('%s is not a form field.', $name));
         }
@@ -257,7 +260,7 @@ class FormContext implements Context
         }
         // Not even a collection
         if (!is_array($formField)) {
-            throw new \DomainException(sprintf('%s is not a form field', $name));
+            throw new \DomainException(sprintf('%s is not a choice form field', $name));
         }
         foreach ($formField as $formFiel) {
             if (!$formFiel instanceof ChoiceFormField) {
@@ -278,13 +281,13 @@ class FormContext implements Context
         $this->lastForm = $form->form();
     }
 
-    public function setLastForm(Crawler $form): void
+    protected function setLastForm(Crawler $form): void
     {
         $this->lastForm = $form->form();
         $this->lastFormCrawler = $form->first();
     }
 
-    public function getLastForm(): Form
+    protected function getLastForm(): Form
     {
         if (null === $this->lastForm) {
             throw new \DomainException('No form was queried yet');
@@ -293,7 +296,7 @@ class FormContext implements Context
         return $this->lastForm;
     }
 
-    public function getLastFormCrawler(): Crawler
+    protected function getLastFormCrawler(): Crawler
     {
         if (null === $this->lastFormCrawler) {
             throw new \DomainException('No form was queried yet');

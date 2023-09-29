@@ -79,7 +79,7 @@ abstract class AbstractDatabaseContext implements Context
     }
 
     /** @param class-string $class2 */
-    protected function createRelation(int $id1, string $class2, int $id2, string $relationName): void
+    protected function createRelation(int $id1, string $class2, int $id2, string $relationName, ?string $reverseRelationName = null): void
     {
         $entity1 = $this->getRepo()->find($id1);
         if (null === $entity1) {
@@ -96,6 +96,10 @@ abstract class AbstractDatabaseContext implements Context
             throw new \DomainException(sprintf('Property "%s" is not a collection', $relationName));
         }
         $collection->add($entity2);
+        if (null !== $reverseRelationName) {
+            $collection2 = $pa->getValue($entity2, $reverseRelationName);
+            $collection2->add($entity1);
+        }
         $this->em->flush();
         $this->em->clear();
     }

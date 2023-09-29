@@ -13,6 +13,12 @@ RUN apk add --no-cache --virtual .build-deps autoconf g++ make && \
     rm -rf /tmp/* &&\
     docker-php-ext-enable pcov
 
+# For debugging
+RUN apk add --no-cache --virtual .build-deps autoconf g++ make linux-headers &&\
+    pecl install xdebug-3.2.0 && \
+    apk del .build-deps && \
+    rm -rf /tmp/*
+
 # For codecov upload inside circleci
 RUN apk add gpg gpg-agent gpgv
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer

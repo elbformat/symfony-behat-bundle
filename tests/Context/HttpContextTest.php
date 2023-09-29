@@ -91,7 +91,7 @@ class HttpContextTest extends TestCase
 
     public function testIFollowTheRedirect(): void
     {
-        $this->state->update(new Request(), new Response('', 302, ['Location' => '/target']));
+        $this->state->update(new Request(server:['HTTP_HOST' => 'localhost']), new Response('', 302, ['Location' => '/target']));
         $this->kernel->method('handle')->with($this->callback(function (Request $request) {
             return '/target' === $request->getPathInfo();
         }))->willReturn(new Response('Redirect Target'));

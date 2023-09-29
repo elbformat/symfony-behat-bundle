@@ -70,6 +70,5 @@ class State
         }
 
         return $this->crawler;
-
     }
 }

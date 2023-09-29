@@ -72,7 +72,6 @@ class HttpContext implements Context
         $server = [];
         if ($data) {
             $rawData = $data->getRaw();
-            $server['CONTENT_TYPE'] = 'application/json';
             if (str_contains($rawData, "\n\n")) {
                 [$headers,$rawData] = explode("\n\n", $rawData);
                 foreach (explode("\n", $headers) as $headerRow) {
@@ -105,7 +104,7 @@ class HttpContext implements Context
     }
 
     #[Then('/^the response status code is (?P<code>\d+)$/')]
-    #[Then('The page shows up')]
+    #[Then('the page shows up')]
     public function theResponseStatusCodeIs(string $code = '200'): void
     {
         $response = $this->state->getResponse();

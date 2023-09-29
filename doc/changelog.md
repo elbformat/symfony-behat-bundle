@@ -40,6 +40,7 @@ Instead, we now have a PSR-compatible TestLogger that catches the logs and can b
 * `assertObject` returns the found object to allow steps to be built upon the results.
 * Support for constructor arguments, including defaults defined in the context.
 * `assertCollectionDoesNotContain` helps negation of collection check
+* Support creating m:n relations by adding a `$reverseRelationName` parameter.
 
 ### Added DateContext
 Based on [ClockMock](https://packagist.org/packages/slope-it/clock-mock) and the uopz extension, the context allows you to change the current date inside your tests.

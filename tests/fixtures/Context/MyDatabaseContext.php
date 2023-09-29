@@ -50,6 +50,11 @@ class MyDatabaseContext extends AbstractDatabaseContext
         $this->assertCollectionContains($id1, $class2, $id2, $relationName);
     }
 
+    public function assertMyCollectionContainsNot(int $id1, string $class2, int $id2, string $relationName): void
+    {
+        $this->assertCollectionDoesNotContain($id1, $class2, $id2, $relationName);
+    }
+
     protected function getClassName(): string
     {
         return OneOfEverything::class;

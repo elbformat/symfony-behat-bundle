@@ -415,6 +415,38 @@ class AbstractDatabaseContextTest extends TestCase
         $this->context->assertMyCollectionContains(1, OneOfEverything::class, 2, 'collection');
     }
 
+    public function testAssertCollectionNotContains(): void
+    {
+        $repoMock = $this->createMock(EntityRepository::class);
+        $obj1 = new OneOfEverything();
+        $obj2 = new OneOfEverything();
+        $repoMock->expects($this->exactly(2))
+            ->method('find')
+            ->withConsecutive([1], [2])
+            ->willReturnOnConsecutiveCalls($obj1, $obj2);
+        $this->em->expects($this->exactly(2))
+            ->method('getRepository')
+            ->willReturn($repoMock);
+        $this->context->assertMyCollectionContainsNot(1, OneOfEverything::class, 2, 'collection');
+    }
+
+    public function testAssertCollectionNotContainsContains(): void
+    {
+        $repoMock = $this->createMock(EntityRepository::class);
+        $obj1 = new OneOfEverything();
+        $obj2 = new OneOfEverything();
+        $obj1->setCollection(new ArrayCollection([$obj2]));
+        $repoMock->expects($this->exactly(2))
+            ->method('find')
+            ->withConsecutive([1], [2])
+            ->willReturnOnConsecutiveCalls($obj1, $obj2);
+        $this->em->expects($this->exactly(2))
+            ->method('getRepository')
+            ->willReturn($repoMock);
+        $this->expectException(\DomainException::class);
+        $this->context->assertMyCollectionContainsNot(1, OneOfEverything::class, 2, 'collection');
+    }
+
     private function expectedExceptionTableEntry(string $field, string $expected, string $found): void
     {
         $field = preg_quote($field, '/');

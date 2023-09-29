@@ -12,6 +12,11 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 abstract class AbstractApiContext implements Context
 {
+    protected function resetMock(): void
+    {
+        MockClientCallback::reset();
+    }
+
     protected function addResponse(string $url, string $method = 'GET', ?PyStringNode $rawHttp = null, int $code = 200): void
     {
         MockClientCallback::addResponse($method, $url, $this->buildMockResponse($code, $rawHttp?->getRaw()));
@@ -45,7 +50,7 @@ abstract class AbstractApiContext implements Context
         }
     }
 
-    public function assertNoApiCall(string $url, string $method = 'GET'): void
+    protected function assertNoApiCall(string $url, string $method = 'GET'): void
     {
         try {
             MockClientCallback::getRequest($method, $url);

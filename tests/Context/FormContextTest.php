@@ -9,6 +9,7 @@ use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\DomCrawler\Form;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -20,21 +21,12 @@ class FormContextTest extends TestCase
 
     protected ?KernelInterface $kernel = null;
     protected ?FormContext $formContext = null;
-    protected ?State $state = null;
 
     protected function setUp(): void
     {
         $this->kernel = $this->createMock(KernelInterface::class);
         $this->state = new State();
         $this->formContext = new FormContext(kernel: $this->kernel, state: $this->state, projectDir: __DIR__.'/../..', strComp: new StringCompare());
-    }
-
-    public function testThePageContainsAFormNamed(): void
-    {
-        $this->setDom('<form name="hello"></form>');
-        $this->formContext->thePageContainsAFormNamed('hello');
-        $this->assertInstanceOf(Form::class, $this->state->getLastForm());
-        $this->assertInstanceOf(Crawler::class, $this->state->getLastFormCrawler());
     }
 
     public function testThePageContainsAFormNamedFail(): void
@@ -46,74 +38,85 @@ class FormContextTest extends TestCase
 
     public function testIFillInto(): void
     {
-        $crawler = new Crawler('<form><input type="text" name="form[text]"/></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"><input name="form[text]"/></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->formContext->iFillInto('test', 'form[text]');
-        $this->assertEquals('test', $this->state->getLastForm()->get('form[text]')->getValue());
+        $this->kernel->method('handle')->willReturn(new Response());
+        $this->formContext->iSubmitTheForm();
+        $rq = $this->state->getRequest();
+        $this->assertEquals('test', $rq->query->all()['form']['text']);
     }
 
     public function testIFillIntoAmbiguous(): void
     {
-        $crawler = new Crawler('<form><input name="form[text][]"/><input name="form[text][]"/></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"><input name="form[text][]"/><input name="form[text][]"/></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->expectExceptionMessage('form[text] is not a single form field');
         $this->formContext->iFillInto('test', 'form[text]');
     }
 
     public function testIFillIntoNoInput(): void
     {
-        $crawler = new Crawler('<form></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->expectException(\InvalidArgumentException::class);
         $this->formContext->iFillInto('test', 'form[text]');
     }
 
     public function testICheckCheckbox(): void
     {
-        $crawler = new Crawler('<form><input type="checkbox" name="form[check]" value="an"/></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"><input type="checkbox" name="form[check]" value="an"/></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->formContext->iCheckCheckbox('form[check]');
-        $this->assertTrue($this->state->getLastForm()->get('form[check]')->hasValue());
+        $this->kernel->method('handle')->willReturn(new Response());
+        $this->formContext->iSubmitTheForm();
+        $rq = $this->state->getRequest();
+        $this->assertSame('an',$rq->query->all()['form']['check']);
     }
 
     public function testICheckCheckboxWrongType(): void
     {
-        $crawler = new Crawler('<form><input type="text" name="form[check]" value="an"/></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"><input type="text" name="form[check]" value="an"/></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->expectExceptionMessage('form[check] is not a choice form field');
         $this->formContext->iCheckCheckbox('form[check]');
     }
 
     public function testISelectFrom(): void
     {
-        $crawler = new Crawler('<form><select name="form[selection]"><option value="a">Option A</option></select></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"><select name="form[selection]"><option value="a">Option A</option></select></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->formContext->iSelectFrom('a', 'form[selection]');
-        $this->assertEquals('a', $this->state->getLastForm()->get('form[selection]')->getValue());
+        $this->kernel->method('handle')->willReturn(new Response());
+        $this->formContext->iSubmitTheForm();
+        $rq = $this->state->getRequest();
+        $this->assertEquals('a', $rq->query->all()['form']['selection']);
     }
 
     public function testISelectFromMultiple(): void
     {
-        $crawler = new Crawler('<form><select name="form[selection]" multiple><option value="a">Option A</option><option value="b">Option B</option></select></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test" method="post"><select name="form[selection]" multiple><option value="a">Option A</option><option value="b">Option B</option></select></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->formContext->iSelectFrom('a,b', 'form[selection]');
-        $this->assertEquals(['a', 'b'], $this->state->getLastForm()->get('form[selection]')->getValue());
+        $this->kernel->method('handle')->willReturn(new Response());
+        $this->formContext->iSubmitTheForm();
+        $rq = $this->state->getRequest();
+        $this->assertEquals(['a', 'b'], $rq->request->all()['form']['selection']);
     }
 
     public function testISelectFromNoChoice(): void
     {
-        $crawler = new Crawler('<form><input type="text" name="form[selection]" /></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"><input type="text" name="form[selection]" /></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->expectExceptionMessage('form[selection] is not a choice form field');
         $this->formContext->iSelectFrom('a', 'form[selection]');
     }
 
     public function testISubmitTheForm(): void
     {
-        $dom = '<form action="/submit" method="post"><input type="text" name="lorem" value="ipsum"></form>';
+        $dom = '<form name="test" action="/submit" method="post"><input type="text" name="lorem" value="ipsum"></form>';
         $this->setDom($dom);
-        $crawler = new Crawler($dom, 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->kernel->expects($this->once())->method('handle')->with($this->callback(function (Request $request) {
             if ('/submit' !== $request->getRequestUri()) {
                 return false;
@@ -132,26 +135,29 @@ class FormContextTest extends TestCase
 
     public function testISelectUploadAt(): void
     {
-        $crawler = new Crawler('<form><input type="file" name="form[file]" /></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test" method="post"><input type="file" name="form[file]" /></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->formContext->iSelectUploadAt('tests/fixtures/1px.jpg', 'form[file]');
-        $uplValue = $this->state->getLastForm()->get('form[file]')->getValue();
-        $this->assertIsArray($uplValue);
-        $this->assertEquals('1px.jpg', $uplValue['name']);
+        $this->kernel->method('handle')->willReturn(new Response());
+        $this->formContext->iSubmitTheForm();
+        $rq = $this->state->getRequest();
+        $uplFile = $rq->files->get('form')['file'];
+        $this->assertInstanceOf(UploadedFile::class,$uplFile);
+        $this->assertEquals('1px.jpg', $uplFile->getClientOriginalName());
     }
 
     public function testISelectUploadAtNotAnUpload(): void
     {
-        $crawler = new Crawler('<form><input type="text" name="form[file]" /></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"><input type="text" name="form[file]" /></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->expectExceptionMessage('form[file] is not a file form field');
         $this->formContext->iSelectUploadAt('tests/fixtures/1px.png', 'form[file]');
     }
 
     public function testISelectUploadAtMissingFixture(): void
     {
-        $crawler = new Crawler('<form><input type="file" name="form[file]" /></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"><input type="file" name="form[file]" /></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->expectExceptionMessageMatches('/Fixture file not found/');
         $this->expectExceptionMessageMatches('#tests/fixtures/1px.png#');
         $this->formContext->iSelectUploadAt('tests/fixtures/1px.png', 'form[file]');
@@ -159,8 +165,8 @@ class FormContextTest extends TestCase
 
     public function testTheFormContainsAnInputField(): void
     {
-        $crawler = new Crawler('<form><input type="text" name="form[text]" /></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"><input type="text" name="form[text]"></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $tableData = [
             1 => ['type', 'text'],
             2 => ['name', 'form[text]'],
@@ -171,8 +177,8 @@ class FormContextTest extends TestCase
 
     public function testTheFormContainsAnInputFieldWrongType(): void
     {
-        $crawler = new Crawler('<form><input type="password" name="form[text]"></form>', 'http://localhost/');
-        $this->state->setLastForm($crawler->filterXPath('//form'));
+        $this->setDom('<form name="test"><input type="password" name="form[text]"></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
         $this->expectExceptionMessage('input not found. Did you mean "<input type="password" name="form[text]"/>"?');
         $tableData = [
             1 => ['type', 'text'],

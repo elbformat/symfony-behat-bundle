@@ -4,6 +4,7 @@ namespace Elbformat\SymfonyBehatBundle\Tests\Browser;
 
 use Elbformat\SymfonyBehatBundle\Browser\State;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -40,5 +41,18 @@ class StateTest extends TestCase
         $state = new State();
         $this->expectExceptionMessage('No request was made yet');
         $state->getRequest();
+    }
+
+    public function testCrawlerMutatesonUpdate(): void
+    {
+        $state = new State();
+        $response = new Response('', 200);
+        $state->update(Request::create('/'), $response);
+        $crawler1 = $state->getCrawler();
+        $this->assertSame($state->getResponse(), $response);
+        $response2 = new Response('2', 200);
+        $state->update(Request::create('/2'), $response2);
+        $crawler2 = $state->getCrawler();
+        $this->assertNotSame($crawler1, $crawler2);
     }
 }

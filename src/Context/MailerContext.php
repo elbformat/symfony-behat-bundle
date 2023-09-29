@@ -12,16 +12,18 @@ use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
 use Elbformat\SymfonyBehatBundle\Mailer\TestTransport;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Part\DataPart;
 
 class MailerContext implements Context
 {
-    protected Email|null $lastMail = null;
+    protected ?Email $lastMail = null;
+    protected ?DataPart $lastAttachment = null;
 
     public function __construct(
         protected KernelInterface $kernel,
         protected StringCompare $strComp,
-    )
-    {
+        protected string $projectDir,
+    ) {
     }
 
     /* Purge the spool folder between each scenario. */
@@ -109,41 +111,39 @@ class MailerContext implements Context
         /** @var array|string $realyFrom */
         $realyFrom = $this->getLastMail()->getSender()->getAddress();
         if ($realyFrom !== $from) {
-            throw new \DomainException((string) $realyFrom);
+            throw new \DomainException((string)$realyFrom);
         }
     }
 
-//    #[Then('the e-mail has an attachment :name')]
-//    public function theEMailHasAnAttachment(string $name): void
-//    {
-//        $attachments = $this->getLastMail()->getAttachments();
-//        foreach ($attachments as $attachment) {
-//            $filename = $attachment->getPreparedHeaders()->getHeaderParameter('Content-Disposition', 'filename');
-//            if ($name === $filename) {
-//                $this->lastAttachment = new Attachment($filename, $attachment->getBody());
-//
-//                return;
-//            }
-//        }
-//        throw new \DomainException(sprintf('No attachment with name %s found.', $name));
-//    }
-//
-//    #[Then('the e-mail attachment equals fixture :fixture')]
-//    public function theEMailAttachmentEqualsFixture(string $fixture): void
-//    {
-//        if (!file_exists($fixture)) {
-//            throw new \DomainException('Fixture not found');
-//        }
-//
-//        $algo = 'md5';
-//        $attachmentPath = $this->mailPath.'/'.$this->lastAttachment->getFilename();
-//        file_put_contents($attachmentPath, $this->lastAttachment->getBody());
-//
-//        if (hash_file($algo, $attachmentPath) !== hash_file($algo, $fixture)) {
-//            unlink($attachmentPath);
-//            throw new \DomainException(sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->getFilename()));
-//        }
-//    }
+    #[Then('the e-mail has an attachment :name')]
+    public function theEMailHasAnAttachment(string $name): void
+    {
+        $attachments = $this->getLastMail()->getAttachments();
+        foreach ($attachments as $attachment) {
+            $filename = $attachment->getPreparedHeaders()->getHeaderParameter('Content-Disposition', 'filename');
+            if ($name === $filename) {
+                $this->lastAttachment = $attachment;
+
+                return;
+            }
+        }
+        throw new \DomainException(sprintf('No attachment with name %s found.', $name));
+    }
+
+    #[Then('the e-mail attachment equals fixture :fixture')]
+    public function theEMailAttachmentEqualsFixture(string $fixture): void
+    {
+        if (!file_exists($this->projectDir.'/'.$fixture)) {
+            throw new \DomainException('Fixture not found');
+        }
+        $fixtureHash = hash_file('md5', $this->projectDir.'/'.$fixture);
+
+        $attachmentHash = md5($this->lastAttachment->bodyToString());
+
+        if ($fixtureHash !== $attachmentHash) {
+            throw new \DomainException(sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->getFilename()));
+        }
+    }
 
     /** @param Email[] $mails */
     protected function getMailsDump(array $mails): string

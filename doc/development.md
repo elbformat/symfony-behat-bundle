@@ -16,8 +16,6 @@ vendor/bin/psalm
 
 Enable xdebug inside the container
 ```bash
-apk add autoconf g++ make
-pecl install xdebug-3.1.4
 docker-php-ext-enable xdebug
 export XDEBUG_CONFIG="client_host=172.17.0.1 idekey=PHPSTORM"
 export XDEBUG_MODE="debug"
