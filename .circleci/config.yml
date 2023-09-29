@@ -20,6 +20,7 @@ jobs:
             - image: 'hgiesenow/php:<< parameters.php_version >>'
         steps:
             - checkout
+            - run: 'apk add --no-cache --virtual .build-deps $PHPIZE_DEPS && pecl install uopz-7.1.1 && apk del .build-deps && docker-php-ext-enable uopz'
             - run: 'composer require -W symfony/dom-crawler:"^<< parameters.symfony_version >>" symfony/property-access:"^<< parameters.symfony_version >>"; rm composer.lock'
             - run: 'composer require --dev -W symfony/framework-bundle:"^<< parameters.symfony_version >>"; rm composer.lock'
             - run: 'composer require --dev -W monolog/monolog:"^<< parameters.monolog_version >>"; rm composer.lock'
@@ -34,6 +35,7 @@ jobs:
             - image: 'hgiesenow/php:<< parameters.php_version >>'
         steps:
             - checkout
+            - run: 'apk add --no-cache --virtual .build-deps $PHPIZE_DEPS && pecl install uopz-7.1.1 && apk del .build-deps && docker-php-ext-enable uopz'
             - attach_workspace:
                 at: '.'
             - run: 'phpdbg -qrr -d memory_limit=4G vendor/bin/phpunit --testsuite unit'
