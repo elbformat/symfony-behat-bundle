@@ -21,7 +21,7 @@ class JsonContextTest extends TestCase
     {
         $this->kernel = $this->createMock(KernelInterface::class);
         $this->state = new State();
-        $this->jsonContext = new JsonContext(arrayComp: new ArrayDeepCompare(), state: $this->state);
+        $this->jsonContext = new JsonContext(kernel: $this->kernel, arrayComp: new ArrayDeepCompare(), state: $this->state);
     }
 
     public function testTheResponseJsonMatches(): void

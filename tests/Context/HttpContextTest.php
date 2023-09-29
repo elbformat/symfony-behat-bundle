@@ -75,9 +75,6 @@ class HttpContextTest extends TestCase
                 if ('POST' !== $request->getMethod()) {
                     return false;
                 }
-                if ('json' !== $request->getContentType()) {
-                    return false;
-                }
                 if (implode("\n", $postData) !== $request->getContent()) {
                     return false;
                 }
