@@ -50,7 +50,7 @@ default:
         - Elbformat\SymfonyBehatBundle\Context\MailerContext
 ```
 ### Mailer
-To make the Test-Mailer work, you need to set the mailer dsn in `config/packages/framework.yaml`
+To make the Test-Mailer work, you need to set the mailer dsn in `config/packages/mailer.yaml`
 ```
 when@test:
     framework:

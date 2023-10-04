@@ -27,6 +27,7 @@ services:
       $strComp: '@Elbformat\SymfonyBehatBundle\Helper\StringCompare'
   Elbformat\SymfonyBehatBundle\Context\JsonContext:
     arguments:
+      $kernel: '@kernel'
       $state: '@Elbformat\SymfonyBehatBundle\Browser\State'
       $arrayComp: '@Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare'
   Elbformat\SymfonyBehatBundle\Context\LoggingContext: ~
