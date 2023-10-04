@@ -50,7 +50,7 @@ class MailerContext implements Context
                 }
             }
         }
-        throw new \DomainException('Did you mean: '.$this->getMailsDump($mails));
+        throw new \DomainException('Mail not found. Did you mean: '.$this->getMailsDump($mails));
     }
 
     #[Then('no e-mail is being sent')]
@@ -75,10 +75,10 @@ class MailerContext implements Context
     #[Then('the e-mail contains :text')]
     public function theEMailContains(string $text = null, PyStringNode $stringNode = null): void
     {
-        $mailText = (string) $this->getLastMail()->getHtmlBody();
+        $mailText = (string) ($this->getLastMail()->getHtmlBody() ?? $this->getLastMail()->getTextBody());
         $textToFind = $text ?? ($stringNode ? $stringNode->getRaw() : '');
         if (!$this->strComp->stringContains($mailText, $textToFind)) {
-            throw new \DomainException($mailText);
+            throw new \DomainException('Text not found in: '.$mailText);
         }
     }
 
@@ -86,7 +86,7 @@ class MailerContext implements Context
     #[Then('the e-mail does not contain :text')]
     public function theEMailDoesNotContain(string $text = null, PyStringNode $stringNode = null): void
     {
-        $mailText = $this->getLastMail()->getHtmlBody();
+        $mailText = $this->getLastMail()->getHtmlBody() ?? $this->getLastMail()->getTextBody();
         $textToFind = $text ?? ($stringNode ? $stringNode->getRaw() : '');
         if ($this->strComp->stringContains((string) $mailText, $textToFind)) {
             throw new \DomainException('Text found!');
@@ -97,12 +97,14 @@ class MailerContext implements Context
     public function theEMailIsAlsoBeingSentTo(string $to): void
     {
         $recipients = $this->getLastMail()->getTo();
+        $tos = [];
         foreach ($recipients as $recipient) {
             if ($to === $recipient->getAddress()) {
                 return;
             }
+            $tos[] = $recipient->getAddress();
         }
-        throw new \DomainException(implode(',', $recipients));
+        throw new \DomainException('Found recipients: '.implode(',', $tos));
     }
 
     #[Then('the e-mail is being sent from :from')]
@@ -140,7 +142,7 @@ class MailerContext implements Context
         if (null === $this->lastAttachment) {
             throw new \DomainException('Please check the attachment first with "the e-mail has an attachment"');
         }
-        $attachmentHash = md5($this->lastAttachment->bodyToString());
+        $attachmentHash = md5(base64_decode($this->lastAttachment->bodyToString()));
 
         if ($fixtureHash !== $attachmentHash) {
             throw new \DomainException(sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->getFilename() ?? ''));

@@ -12,6 +12,11 @@ class TestLogger extends AbstractLogger
     /** @var array<string,LogEntry[]> */
     protected static array $logs = [];
 
+    public static function reset(): void
+    {
+        self::$logs = [];
+    }
+
     /** @param array $context */
     public function log(mixed $level, \Stringable|string $message, array $context = []): void
     {
@@ -21,7 +26,7 @@ class TestLogger extends AbstractLogger
         if (LogLevel::DEBUG === $level || LogLevel::INFO === $level) {
             return;
         }
-        self::$logs[$level][] = new LogEntry((string) $message, $context);
+        self::$logs[$level][] = new LogEntry((string)$message, $context);
     }
 
     /** @return LogEntry[] */

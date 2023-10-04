@@ -63,6 +63,17 @@ class FormContextTest extends TestCase
         $this->formContext->iFillInto('test', 'form[text]');
     }
 
+    public function testIClear(): void
+    {
+        $this->setDom('<form name="test"><input name="form[text]" value="test" /></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
+        $this->formContext->iClearField('form[text]');
+        $this->kernel->method('handle')->willReturn(new Response());
+        $this->formContext->iSubmitTheForm();
+        $rq = $this->state->getRequest();
+        $this->assertEquals('', $rq->query->all()['form']['text']);
+    }
+
     public function testICheckCheckbox(): void
     {
         $this->setDom('<form name="test"><input type="checkbox" name="form[check]" value="an"/></form>');
@@ -80,6 +91,17 @@ class FormContextTest extends TestCase
         $this->formContext->thePageContainsAFormNamed('test');
         $this->expectExceptionMessage('form[check] is not a choice form field');
         $this->formContext->iCheckCheckbox('form[check]');
+    }
+
+    public function testIUncheckCheckbox(): void
+    {
+        $this->setDom('<form name="test"><input type="checkbox" name="form[check]" value="an" checked="checked"/></form>');
+        $this->formContext->thePageContainsAFormNamed('test');
+        $this->formContext->iUncheckCheckbox('form[check]');
+        $this->kernel->method('handle')->willReturn(new Response());
+        $this->formContext->iSubmitTheForm();
+        $rq = $this->state->getRequest();
+        $this->assertSame('', $rq->query->all()['form']['check'] ?? '');
     }
 
     public function testISelectFrom(): void

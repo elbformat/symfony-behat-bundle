@@ -16,13 +16,25 @@ class HtmlContextTest extends TestCase
 
     protected ?KernelInterface $kernel = null;
     protected ?HtmlContext $htmlContext = null;
-    protected ?State $state = null;
 
     protected function setUp(): void
     {
         $this->kernel = $this->createMock(KernelInterface::class);
         $this->state = new State();
         $this->htmlContext = new HtmlContext(state: $this->state, strComp: new StringCompare());
+    }
+
+    public function testIRemoveAttributeFrom(): void
+    {
+        $this->setDom('<p hidden="hidden">Hello World</p>');
+        $this->htmlContext->iRemoveAttributeFrom('hidden', '//p');
+        $this->assertEquals('<body><p>Hello World</p></body>', $this->state->getCrawler()->html());
+    }
+    public function testIRemoveAttributeFromNotFound(): void
+    {
+        $this->setDom('<p hidden="hidden">Hello World</p>');
+        $this->expectExceptionMessage('DOM Element not found');
+        $this->htmlContext->iRemoveAttributeFrom('hidden', '//div');
     }
 
     public function testISee(): void
@@ -51,6 +63,20 @@ class HtmlContextTest extends TestCase
         $this->setDom('<p>Hello World</p>');
         $this->expectException(\DomainException::class);
         $this->htmlContext->iDontSee('Hello World');
+    }
+
+    public function testISeeBefore(): void
+    {
+        $this->setDom('<p>Hello World</p>');
+        $this->expectNotToPerformAssertions();
+        $this->htmlContext->iSeeBefore('Hello', 'World');
+    }
+
+    public function testISeeBeforeFails(): void
+    {
+        $this->setDom('<p>Hello World</p>');
+        $this->expectExceptionMessage('"World" found at Position 9, "Hello" at 3');
+        $this->htmlContext->iSeeBefore('World', 'Hello');
     }
 
     public function testISeeATag(): void

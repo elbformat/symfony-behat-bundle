@@ -63,7 +63,7 @@ class FormContext implements Context
     }
 
     #[When('I clear field :name')]
-    public function iEmptyField(string $name): void
+    public function iClearField(string $name): void
     {
         $this->getFormField($name)->setValue(null);
     }

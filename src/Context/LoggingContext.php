@@ -7,6 +7,7 @@ namespace Elbformat\SymfonyBehatBundle\Context;
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
 use Behat\Hook\AfterScenario;
+use Behat\Hook\BeforeScenario;
 use Behat\Step\Then;
 use Behat\Testwork\Hook\Scope\AfterTestScope;
 use Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare;
@@ -19,6 +20,12 @@ use Elbformat\SymfonyBehatBundle\Logger\TestLogger;
  */
 class LoggingContext implements Context
 {
+    #[BeforeScenario]
+    public function reset(): void
+    {
+        TestLogger::reset();
+    }
+
     /**
      * As we use a testHandler, logs are not available to the output.
      * So we will provide them here, if a scenario fails.

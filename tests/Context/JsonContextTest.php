@@ -7,6 +7,8 @@ use Elbformat\SymfonyBehatBundle\Browser\State;
 use Elbformat\SymfonyBehatBundle\Context\JsonContext;
 use Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 class JsonContextTest extends TestCase
@@ -22,6 +24,70 @@ class JsonContextTest extends TestCase
         $this->kernel = $this->createMock(KernelInterface::class);
         $this->state = new State();
         $this->jsonContext = new JsonContext(kernel: $this->kernel, arrayComp: new ArrayDeepCompare(), state: $this->state);
+    }
+
+    public function testISendARequestTo(): void
+    {
+        $postData = [
+            '{',
+            '  lorem":"ipsum"',
+            '}',
+        ];
+
+        $this->kernel->expects($this->once())->method('shutdown');
+        $this->kernel->expects($this->once())
+            ->method('handle')
+            ->with($this->callback(function (Request $request) use ($postData) {
+                if ('/test' !== $request->getPathInfo()) {
+                    return false;
+                }
+                if ('POST' !== $request->getMethod()) {
+                    return false;
+                }
+                if ('json' !== $request->getContentTypeFormat()) {
+                    return false;
+                }
+                if (implode("\n", $postData) !== $request->getContent()) {
+                    return false;
+                }
+
+                return true;
+            }))
+            ->willReturn(new Response(''));
+
+        $this->jsonContext->iMakeARequestWithJsonDataTo('POST', '/test', new PyStringNode($postData, 1));
+    }
+
+    public function testISendARequestToWithHeaders(): void
+    {
+        $postData = [
+            '{',
+            '  lorem":"ipsum"',
+            '}',
+        ];
+
+        $this->kernel->expects($this->once())->method('shutdown');
+        $this->kernel->expects($this->once())
+            ->method('handle')
+            ->with($this->callback(function (Request $request) use ($postData) {
+                if ('/test' !== $request->getPathInfo()) {
+                    return false;
+                }
+                if ('POST' !== $request->getMethod()) {
+                    return false;
+                }
+                if ('json' !== $request->getContentTypeFormat()) {
+                    return false;
+                }
+                if (implode("\n", $postData) !== $request->getContent()) {
+                    return false;
+                }
+
+                return true;
+            }))
+            ->willReturn(new Response(''));
+
+        $this->jsonContext->iMakeARequestWithJsonDataTo('POST', '/test', new PyStringNode($postData, 1));
     }
 
     public function testTheResponseJsonMatches(): void
