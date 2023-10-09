@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.5.2
+* Fix TestLogger to be compatible with symfony 5.4 LTS.
+
+## v1.5.1
+* Bugfix: kernel not injected into JsonContext
+
 ## v1.5.0
 
 ### Restructuring BrowserContext

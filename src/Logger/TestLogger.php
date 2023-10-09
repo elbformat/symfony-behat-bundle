@@ -17,8 +17,12 @@ class TestLogger extends AbstractLogger
         self::$logs = [];
     }
 
-    /** @param array $context */
-    public function log(mixed $level, \Stringable|string $message, array $context = []): void
+    /**
+     * @param mixed $level
+     * @param \Stringable|string $message
+     * @param mixed[] $context
+     */
+    public function log($level, $message, array $context = []): void
     {
         if (!is_string($level)) {
             $level = LogLevel::ERROR;
