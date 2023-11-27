@@ -1,4 +1,4 @@
-FROM php:8.2-alpine
+FROM php:8.3-alpine
 
 # For clock-mock
 RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS &&\
