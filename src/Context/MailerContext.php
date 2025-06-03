@@ -73,7 +73,7 @@ class MailerContext implements Context
 
     #[Then('the e-mail contains')]
     #[Then('the e-mail contains :text')]
-    public function theEMailContains(string $text = null, PyStringNode $stringNode = null): void
+    public function theEMailContains(?string $text = null, ?PyStringNode $stringNode = null): void
     {
         $mailText = (string) ($this->getLastMail()->getHtmlBody() ?? $this->getLastMail()->getTextBody());
         $textToFind = $text ?? ($stringNode ? $stringNode->getRaw() : '');
@@ -84,7 +84,7 @@ class MailerContext implements Context
 
     #[Then('the e-mail does not contain')]
     #[Then('the e-mail does not contain :text')]
-    public function theEMailDoesNotContain(string $text = null, PyStringNode $stringNode = null): void
+    public function theEMailDoesNotContain(?string $text = null, ?PyStringNode $stringNode = null): void
     {
         $mailText = $this->getLastMail()->getHtmlBody() ?? $this->getLastMail()->getTextBody();
         $textToFind = $text ?? ($stringNode ? $stringNode->getRaw() : '');
