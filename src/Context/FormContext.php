@@ -208,7 +208,7 @@ class FormContext implements Context
 
     #[Then('select :select contains option')]
     #[Then('select :select contains option :label')]
-    public function selectContainsOption(string $select, string $label = null, ?TableNode $tableNode = null): void
+    public function selectContainsOption(string $select, ?string $label = null, ?TableNode $tableNode = null): void
     {
         $crawler = $this->getLastFormCrawler();
         if (null !== $label) {

@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.5.8
+* Fix: Deprecation warning for implicit nullable parameter.
+
 ## v1.5.7
 * Feature/Fix: Support json arrays in AbstractDatabaseContext  
 
