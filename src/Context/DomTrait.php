@@ -34,7 +34,7 @@ trait DomTrait
                 /** @var DOMNamedNodeMap $fallbackAttributes */
                 $fallbackAttributes = $fallback->attributes;
                 /** @var DOMAttr $attribute */
-                foreach($fallbackAttributes as $attribute) {
+                foreach ($fallbackAttributes as $attribute) {
                     $attribs .= sprintf(' %s="%s"', $attribute->nodeName, $attribute->value);
                 }
                 $foundTag = sprintf('<%s%s>...%s...</%1$s>', $fallback->nodeName, $attribs, $fallback->textContent);
