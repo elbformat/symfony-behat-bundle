@@ -10,6 +10,7 @@ use Elbformat\SymfonyBehatBundle\Tests\Context\ExpectNotToPerformAssertionTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mailer\Envelope;
+use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
@@ -25,6 +26,13 @@ class MailerContextTest extends TestCase
         $this->kernel = $this->createMock(KernelInterface::class);
         $this->mailerContext = new MailerContext($this->kernel, new StringCompare(), __DIR__.'/../..');
         $this->mailerContext->reset();
+    }
+
+    public function testTheEmailSendingWillFail(): void
+    {
+        $this->mailerContext->theEmailSendingWillFail();
+        $this->expectException(TransportException::class);
+        $this->send();
     }
 
     public function testAnEmailIsBeingSentToWithSubject(): void

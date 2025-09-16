@@ -2,6 +2,10 @@
 Checks if mails were sent. 
 For this we use a Testmailer, that is configured via DSN `test://test` inside `.env.test`.
 
+## Given
+### `the e-mail sending will fail`
+Make the mail delivery throw an exception to test error handling
+
 ## Then
 ### `an e-mail is being sent to :recipient with subject <subject>`
 Check if email was sent.
