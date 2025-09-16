@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.10
+* Fix: Mailer deprecation warnings for implicit nullable parameter.
+* Feature: Allow mailer to fail
+
 ## v1.5.9
 * Fix: More deprecation warnings for implicit nullable parameter.
 

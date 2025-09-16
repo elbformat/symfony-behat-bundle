@@ -7,6 +7,7 @@ namespace Elbformat\SymfonyBehatBundle\Context;
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\Hook\BeforeScenario;
+use Behat\Step\Given;
 use Behat\Step\Then;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
 use Elbformat\SymfonyBehatBundle\Mailer\TestTransport;
@@ -31,6 +32,12 @@ class MailerContext implements Context
     public function reset(): void
     {
         TestTransport::reset();
+    }
+
+    #[Given('the e-mail sending will fail')]
+    public function theEmailSendingWillFail(): void
+    {
+        TestTransport::shouldFail();
     }
 
     #[Then('an e-mail is being sent to :recipient with subject :subject')]

@@ -42,7 +42,7 @@ class CommandContext implements Context
     }
 
     #[Given('the next command input is :string')]
-    public function theNextCommandInputIs(string $string)
+    public function theNextCommandInputIs(string $string): void
     {
         if (null === $this->stream) {
             $this->stream = fopen('php://memory', 'r+', false);
