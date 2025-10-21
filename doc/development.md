@@ -2,7 +2,7 @@
 
 Use docker for local tasks
 ```bash
-docker-compose run php sh
+docker compose run php sh
 # Install dependencies
 composer install
 # Run unittests

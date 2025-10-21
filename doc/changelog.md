@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.5.11
+* Fix: Escaping of quotes in xpath expressions.
+
 ## v1.5.10
 * Fix: Mailer deprecation warnings for implicit nullable parameter.
 * Feature: Allow mailer to fail
