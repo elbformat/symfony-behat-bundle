@@ -79,6 +79,20 @@ class HtmlContextTest extends TestCase
         $this->htmlContext->iSeeBefore('World', 'Hello');
     }
 
+    public function testISeeBeforeNotFound1(): void
+    {
+        $this->setDom('<p>Hello World</p>');
+        $this->expectExceptionMessage('"Me" not found');
+        $this->htmlContext->iSeeBefore('Me', 'World');
+    }
+
+    public function testISeeBeforeNotFound2(): void
+    {
+        $this->setDom('<p>Hello World</p>');
+        $this->expectExceptionMessage('"Me" not found');
+        $this->htmlContext->iSeeBefore('Hello', 'Me');
+    }
+
     public function testISeeATag(): void
     {
         $this->setDom('<a href="/test"></a>');
@@ -101,6 +115,22 @@ class HtmlContextTest extends TestCase
         $table = new TableNode([0 => ['href', '/test']]);
         $this->expectNotToPerformAssertions();
         $this->htmlContext->iSeeATag('a', $table, 'Hello World');
+    }
+
+    public function testISeeATagWithDifferentQuotes(): void
+    {
+        $this->setDom('<span text="Hello &quot;World&apos;"></span>');
+        $table = new TableNode([0 => ['text', 'Hello "World\'']]);
+        $this->expectNotToPerformAssertions();
+        $this->htmlContext->iSeeATag('span', $table);
+    }
+
+    public function testISeeATagWithSingleQuote(): void
+    {
+        $this->setDom('<span text="Hello &quot;World&quot;"></span>');
+        $table = new TableNode([0 => ['text', 'Hello "World"']]);
+        $this->expectNotToPerformAssertions();
+        $this->htmlContext->iSeeATag('span', $table);
     }
 
     public function testISeeATagFails(): void

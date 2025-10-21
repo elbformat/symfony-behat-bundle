@@ -113,7 +113,7 @@ class HtmlContext implements Context
         $crawler = $this->getCrawler();
         $xPath = '//'.$tagName;
         foreach ($attr as $attrName => $attrVal) {
-            $xPath .= sprintf('[@%s="%s"]', $attrName, $attrVal);
+            $xPath .= sprintf('[@%s=%s]', $attrName, $this->escapeXpathValue($attrVal));
         }
         $elements = $crawler->filterXPath($xPath);
 
@@ -135,5 +135,30 @@ class HtmlContext implements Context
         }
 
         return null;
+    }
+
+    protected function escapeXpathValue(string $value): string
+    {
+        // Inspired by https://stackoverflow.com/questions/1341847/apostrophe-in-xpath-query/1352556#1352556
+        // use "
+        if (!str_contains($value, '"')) {
+            return '"'.$value.'"';
+        }
+        // use '
+        if (!str_contains($value, "'")) {
+            return "'".$value."'";
+        }
+        // use concat
+        $parts = explode('"', $value);
+        $attrVal = 'concat("'.array_shift($parts).'"';
+        foreach ($parts as $part) {
+            $attrVal .= ",'\"'";
+            if ('' !== $part) {
+                $attrVal .= ',"'.$part.'"';
+            }
+        }
+        $attrVal .= ')';
+
+        return $attrVal;
     }
 }
