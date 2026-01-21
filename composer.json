@@ -27,7 +27,7 @@
     "behat/behat": "^3.8",
     "friends-of-behat/symfony-extension": "^2.2",
     "symfony/dom-crawler": "^5.4|^6.2|7.3.*",
-    "symfony/property-access": "^5.4|^6.2"
+    "symfony/property-access": "^5.4|^6.2|7.3.*"
   },
   "require-dev": {
     "doctrine/orm": "^2.12",
