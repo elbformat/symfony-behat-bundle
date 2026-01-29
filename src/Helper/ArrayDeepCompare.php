@@ -62,7 +62,14 @@ class ArrayDeepCompare
         if (!\is_array($a) && !\is_array($b)) {
             // Scalar values -> compare
             if ($a !== $b) {
-                $this->difference = sprintf('%s: (%s) %s != (%s) %s', $path, \gettype($a), (string)($a ?? ''), \gettype($b), (string)($b ?? ''));
+                $this->difference = sprintf(
+                    '%s: (%s) %s != (%s) %s',
+                    $path,
+                    \gettype($a),
+                    $a ?? '',
+                    \gettype($b),
+                    $b ?? ''
+                );
 
                 return true;
             }
@@ -106,7 +113,7 @@ class ArrayDeepCompare
                         continue 2;
                     }
                 }
-                $this->difference = sprintf('%s: %s Missing', $subpath, (string) $v);
+                $this->difference = sprintf('%s: %s Missing', $subpath, is_array($v) ? json_encode($v) : (string) $v);
 
                 return true;
             }
@@ -114,7 +121,7 @@ class ArrayDeepCompare
 
         // Still entries left in b? -> unequal
         if ($reverseCheck && \count($b)) {
-            $item = (string) array_reverse($b)[0];
+            $item = is_array(array_reverse($b)[0]) ? json_encode(array_reverse($b)[0]) : (string) array_reverse($b)[0];
             $subpath = ($path ? $path.'.' : '').$item;
             $this->difference = sprintf('%s: Extra', $subpath);
 
@@ -123,4 +130,5 @@ class ArrayDeepCompare
 
         return false;
     }
+
 }

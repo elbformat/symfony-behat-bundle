@@ -30,8 +30,9 @@ class ArrayDeepCompareTest extends TestCase
             [['a' => 'b', 'c' => 'd'], /* contains */ ['c' => 'd']],
             [['a' => [['b' => 'c', 'd' => 'e']]], /* contains */ ['a' => [['b' => 'c']]]],
             [['a' => [['b' => 'c', 'd' => 'e']]], /* contains */ ['a' => [['d' => 'e']]]],
-            [['apple','banana'], /* contains */ ['banana']],
-            [['a' => ['apple','banana']], /* contains */ ['a' => []]],
+            [['apple', 'banana'], /* contains */ ['banana']],
+            [['a' => ['apple', 'banana']], /* contains */ ['a' => []]],
+            [['result' => ['apples' => [['appleId' => '10'], ['appleId' => '20']]]], /* contains */ ['result' => ['apples' => [['appleId' => '10']]]]],
         ];
     }
 
@@ -48,11 +49,12 @@ class ArrayDeepCompareTest extends TestCase
     {
         return [
             [['a', 'b'], /* doesn't contain */ ['c'], /* because */ '0: c Missing'],
-            [['a' => 'b', 'c' => 'd'], /* doesn't contain */  ['a' => 'c'], /* because */ 'a: (string) c != (string) b'],
-            [['a' => 'b', 'c' => 'd'], /* doesn't contain */  ['c' => 'b'], /* because */ 'c: (string) b != (string) d'],
-            [['a' => [['b' => 'c', 'd' => 'e']]], /* doesn't contain */  ['a' => ['b' => 3]], /* because */ 'a.b: Missing'],
-            [['a' => [['b' => 'c', 'd' => 'e']]], /* doesn't contain */  ['a' => ['d' => 'c']], /* because */ 'a.d: Missing'],
-            [['a' => ['apple','banana']], /* doesn't contain */ ['a' => 'apple'], /* because */ 'a: <string> != <array>'],
+            [['a' => 'b', 'c' => 'd'], /* doesn't contain */ ['a' => 'c'], /* because */ 'a: (string) c != (string) b'],
+            [['a' => 'b', 'c' => 'd'], /* doesn't contain */ ['c' => 'b'], /* because */ 'c: (string) b != (string) d'],
+            [['a' => [['b' => 'c', 'd' => 'e']]], /* doesn't contain */ ['a' => ['b' => 3]], /* because */ 'a.b: Missing'],
+            [['a' => [['b' => 'c', 'd' => 'e']]], /* doesn't contain */ ['a' => ['d' => 'c']], /* because */ 'a.d: Missing'],
+            [['a' => ['apple', 'banana']], /* doesn't contain */ ['a' => 'apple'], /* because */ 'a: <string> != <array>'],
+            [['result' => ['apples' => [['appleId' => '10'], ['appleId' => '20']]]], /* contains */ ['result' => ['apples' => [['appleId' => '30']]]], 'result.apples.0: {"appleId":"30"} Missing'],
         ];
     }
 
@@ -66,7 +68,7 @@ class ArrayDeepCompareTest extends TestCase
     {
         return [
             [['a'], /* equals */ ['a']],
-            [['a', 'b'], /* equals */ ['b','a']],
+            [['a', 'b'], /* equals */ ['b', 'a']],
         ];
     }
 
@@ -84,7 +86,7 @@ class ArrayDeepCompareTest extends TestCase
         return [
             [['a', 'b'], /* doesn't equal */ ['a'], /* because */ '1: b Missing'],
             [['a', 'b'], /* doesn't equal */ ['b'], /* because */ '0: a Missing'],
-            [['a'], /* doesn't equal */ ['a','b'], /* because */ 'b: Extra'],
+            [['a'], /* doesn't equal */ ['a', 'b'], /* because */ 'b: Extra'],
         ];
     }
 
