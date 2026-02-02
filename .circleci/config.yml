@@ -45,7 +45,7 @@ jobs:
                   file: 'build/clover.xml'
     php-cs-fixer:
         docker:
-            - image: 'hgiesenow/php:8.1'
+            - image: 'hgiesenow/php:8.2'
         steps:
             - checkout
             - attach_workspace:
