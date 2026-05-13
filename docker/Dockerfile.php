@@ -1,4 +1,4 @@
-FROM php:8.2-alpine
+FROM php:8.3-alpine
 
 # For clock-mock
 RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS &&\
@@ -15,7 +15,7 @@ RUN apk add --no-cache --virtual .build-deps autoconf g++ make && \
 
 # For debugging
 RUN apk add --no-cache --virtual .build-deps autoconf g++ make linux-headers &&\
-    pecl install xdebug-3.2.0 && \
+    pecl install xdebug-3.4.0 && \
     apk del .build-deps && \
     rm -rf /tmp/*
 

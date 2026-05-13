@@ -3,6 +3,7 @@
 namespace Helper;
 
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class StringCompareTest extends TestCase
@@ -14,13 +15,13 @@ class StringCompareTest extends TestCase
         $this->comp = new StringCompare();
     }
 
-    /** @dataProvider stringContainsProvider */
+    #[DataProvider('stringContainsProvider')]
     public function testStringContains(string $haystack, string $needle): void
     {
         $this->assertTrue($this->comp->stringContains($haystack, $needle));
     }
 
-    public function stringContainsProvider()
+    public static function stringContainsProvider()
     {
         return [
             ['Hello World', 'Hello'],
@@ -33,15 +34,13 @@ class StringCompareTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider stringContainsNotProvider
-     */
+    #[DataProvider('stringContainsNotProvider')]
     public function testStringContainsNot(string $haystack, string $needle)
     {
         $this->assertFalse($this->comp->stringContains($haystack, $needle));
     }
 
-    public function stringContainsNotProvider()
+    public static function stringContainsNotProvider()
     {
         return [
             ['Hello','World'],
@@ -52,13 +51,13 @@ class StringCompareTest extends TestCase
         ];
     }
 
-    /** @dataProvider stringEqualsProvider */
+    #[DataProvider('stringEqualsProvider')]
     public function testStringEquals(string $haystack, string $needle): void
     {
         $this->assertTrue($this->comp->stringEquals($haystack, $needle));
     }
 
-    public function stringEqualsProvider()
+    public static function stringEqualsProvider()
     {
         return [
             ['Hello World', 'Hello World'],
@@ -71,15 +70,13 @@ class StringCompareTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider stringEqualsNotProvider
-     */
+    #[DataProvider('stringEqualsNotProvider')]
     public function testStringEqualsNot(string $haystack, string $needle)
     {
         $this->assertFalse($this->comp->stringEquals($haystack, $needle));
     }
 
-    public function stringEqualsNotProvider()
+    public static function stringEqualsNotProvider()
     {
         return [
             ['Hello World', 'Hello'],

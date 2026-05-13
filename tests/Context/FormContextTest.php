@@ -17,7 +17,6 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class FormContextTest extends TestCase
 {
     use DomTrait;
-    use ExpectNotToPerformAssertionTrait;
 
     protected ?KernelInterface $kernel = null;
     protected ?FormContext $formContext = null;

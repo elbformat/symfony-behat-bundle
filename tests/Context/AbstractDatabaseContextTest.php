@@ -18,6 +18,7 @@ use Elbformat\SymfonyBehatBundle\Tests\fixtures\Context\MyDatabaseContext;
 use Elbformat\SymfonyBehatBundle\Tests\fixtures\Entity\OneOfEverything;
 use Elbformat\SymfonyBehatBundle\Tests\fixtures\Enum\MyBackedEnum;
 use Elbformat\SymfonyBehatBundle\Tests\fixtures\Enum\MyEnum;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class AbstractDatabaseContextTest extends TestCase
@@ -133,7 +134,7 @@ class AbstractDatabaseContextTest extends TestCase
         $this->context->createMyObject($table);
     }
 
-    /** @dataProvider createObjectBoolProvider */
+    #[DataProvider('createObjectBoolProvider')]
     public function testCreateObjectBool(string $tableVal, bool $expected): void
     {
         $table = new TableNode([
@@ -148,7 +149,7 @@ class AbstractDatabaseContextTest extends TestCase
         $this->context->createMyObject($table);
     }
 
-    public function createObjectBoolProvider(): \Generator
+    public static function createObjectBoolProvider(): \Generator
     {
         yield ['true', true];
         yield ['1', true];
@@ -173,8 +174,7 @@ class AbstractDatabaseContextTest extends TestCase
         $obj2 = new OneOfEverything();
         $repoMock->expects($this->exactly(2))
             ->method('find')
-            ->withConsecutive([1], [2])
-            ->willReturnOnConsecutiveCalls($obj1, $obj2);
+            ->willReturnCallback(fn (int $id) => match($id) { 1 => $obj1, 2 => $obj2 });
         $this->em->expects($this->exactly(2))
             ->method('getRepository')
             ->willReturn($repoMock);
@@ -348,8 +348,7 @@ class AbstractDatabaseContextTest extends TestCase
         $obj1->setCollection(new ArrayCollection([$obj2]));
         $repoMock->expects($this->exactly(2))
             ->method('find')
-            ->withConsecutive([1], [2])
-            ->willReturnOnConsecutiveCalls($obj1, $obj2);
+            ->willReturnCallback(fn (int $id) => match($id) { 1 => $obj1, 2 => $obj2 });
         $this->em->expects($this->exactly(2))
             ->method('getRepository')
             ->willReturn($repoMock);
@@ -392,8 +391,7 @@ class AbstractDatabaseContextTest extends TestCase
         $obj2 = new OneOfEverything();
         $repoMock->expects($this->exactly(2))
             ->method('find')
-            ->withConsecutive([1], [2])
-            ->willReturnOnConsecutiveCalls($obj1, $obj2);
+            ->willReturnCallback(fn (int $id) => match($id) { 1 => $obj1, 2 => $obj2 });
         $this->em->expects($this->exactly(2))
             ->method('getRepository')
             ->willReturn($repoMock);
@@ -404,10 +402,10 @@ class AbstractDatabaseContextTest extends TestCase
     {
         $repoMock = $this->createMock(EntityRepository::class);
         $obj1 = new OneOfEverything();
+        $obj3 = new OneOfEverything();
         $repoMock->expects($this->exactly(2))
             ->method('find')
-            ->withConsecutive([1], [2])
-            ->willReturnOnConsecutiveCalls($obj1, new OneOfEverything());
+            ->willReturnCallback(fn (int $id) => match($id) { 1 => $obj1, 2 => $obj3 });
         $this->em->expects($this->exactly(2))
             ->method('getRepository')
             ->willReturn($repoMock);
@@ -422,8 +420,7 @@ class AbstractDatabaseContextTest extends TestCase
         $obj2 = new OneOfEverything();
         $repoMock->expects($this->exactly(2))
             ->method('find')
-            ->withConsecutive([1], [2])
-            ->willReturnOnConsecutiveCalls($obj1, $obj2);
+            ->willReturnCallback(fn (int $id) => match($id) { 1 => $obj1, 2 => $obj2 });
         $this->em->expects($this->exactly(2))
             ->method('getRepository')
             ->willReturn($repoMock);
@@ -438,8 +435,7 @@ class AbstractDatabaseContextTest extends TestCase
         $obj1->setCollection(new ArrayCollection([$obj2]));
         $repoMock->expects($this->exactly(2))
             ->method('find')
-            ->withConsecutive([1], [2])
-            ->willReturnOnConsecutiveCalls($obj1, $obj2);
+            ->willReturnCallback(fn (int $id) => match($id) { 1 => $obj1, 2 => $obj2 });
         $this->em->expects($this->exactly(2))
             ->method('getRepository')
             ->willReturn($repoMock);

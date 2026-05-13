@@ -20,11 +20,10 @@ jobs:
             - image: 'hgiesenow/php:<< parameters.php_version >>'
         steps:
             - checkout
-            - run: 'apk add --no-cache --virtual .build-deps $PHPIZE_DEPS && pecl install uopz-7.1.1 && apk del .build-deps && docker-php-ext-enable uopz'
+            - run: 'apk add --no-cache --virtual .build-deps $PHPIZE_DEPS && pecl install uopz pcov && apk del .build-deps && docker-php-ext-enable uopz pcov'
             - run: 'composer require -W symfony/dom-crawler:"^<< parameters.symfony_version >>" symfony/property-access:"^<< parameters.symfony_version >>"; rm composer.lock'
             - run: 'composer require --dev -W symfony/framework-bundle:"^<< parameters.symfony_version >>"; rm composer.lock'
             - run: 'composer require --dev -W monolog/monolog:"^<< parameters.monolog_version >>"; rm composer.lock'
-            - run: 'if [ "5.4" == "<< parameters.symfony_version >>" ]; then composer require --dev -W symfony/swiftmailer-bundle:"^3.5"; fi'
             - persist_to_workspace:
                 root: '.'
                 paths: 'vendor'
@@ -35,23 +34,23 @@ jobs:
             - image: 'hgiesenow/php:<< parameters.php_version >>'
         steps:
             - checkout
-            - run: 'apk add --no-cache --virtual .build-deps $PHPIZE_DEPS && pecl install uopz-7.1.1 && apk del .build-deps && docker-php-ext-enable uopz'
+            - run: 'apk add --no-cache --virtual .build-deps $PHPIZE_DEPS && pecl install uopz pcov && apk del .build-deps && docker-php-ext-enable uopz pcov'
             - attach_workspace:
                 at: '.'
-            - run: 'phpdbg -qrr -d memory_limit=4G vendor/bin/phpunit --testsuite unit'
+            - run: 'vendor/bin/phpunit --testsuite unit'
             - store_test_results:
                   path: 'build'
             - codecov/upload:
                   file: 'build/clover.xml'
     php-cs-fixer:
         docker:
-            - image: 'hgiesenow/php:8.1'
+            - image: 'ghcr.io/php-cs-fixer/php-cs-fixer:latest'
         steps:
             - checkout
             - attach_workspace:
                 at: '.'
-            - run: 'vendor/bin/php-cs-fixer fix --diff --dry-run src'
-            - run: 'vendor/bin/php-cs-fixer fix --diff --dry-run tests'
+            - run: 'php-cs-fixer fix --diff --dry-run src'
+            - run: 'php-cs-fixer fix --diff --dry-run tests'
     psalm:
         parameters:
             <<: *jobParams
@@ -61,7 +60,7 @@ jobs:
             - checkout
             - attach_workspace:
                   at: '.'
-            - run: 'if [ "5.4" == "<< parameters.symfony_version >>" ]; then vendor/bin/psalm; else vendor/bin/psalm -c psalm-sf6.xml; fi'
+            - run: 'vendor/bin/psalm'
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -72,8 +71,8 @@ workflows:
                 name: 'build/php-<< matrix.php_version >>/sf-<< matrix.symfony_version >>/monolog-<< matrix.monolog_version >>'
                 matrix:
                     parameters: &params
-                        php_version: ['8.1','8.2']
-                        symfony_version: ['5.4','6.2']
+                        php_version: ['8.3','8.4']
+                        symfony_version: ['7.4']
                         monolog_version: ['2.6']
             - phpunit:
                 name: 'phpunit/php-<< matrix.php_version >>/sf-<< matrix.symfony_version >>/monolog-<< matrix.monolog_version >>'
@@ -82,7 +81,7 @@ workflows:
                     parameters:
                         <<: *params
             - php-cs-fixer:
-                requires: ['build/php-8.1/sf-5.4/monolog-2.6']
+                requires: ['build/php-8.3/sf-7.4/monolog-2.6']
             - psalm:
                 name: 'psalm/php-<< matrix.php_version >>/sf-<< matrix.symfony_version >>/monolog-<< matrix.monolog_version >>'
                 requires: ['build/php-<< matrix.php_version >>/sf-<< matrix.symfony_version >>/monolog-<< matrix.monolog_version >>']

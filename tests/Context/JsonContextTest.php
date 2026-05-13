@@ -14,7 +14,6 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class JsonContextTest extends TestCase
 {
     use DomTrait;
-    use ExpectNotToPerformAssertionTrait;
 
     protected ?KernelInterface $kernel = null;
     protected ?JsonContext $jsonContext = null;

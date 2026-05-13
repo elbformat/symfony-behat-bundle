@@ -5,12 +5,10 @@ namespace Context;
 use Behat\Gherkin\Node\TableNode;
 use Elbformat\SymfonyBehatBundle\Context\LoggingContext;
 use Elbformat\SymfonyBehatBundle\Logger\TestLogger;
-use Elbformat\SymfonyBehatBundle\Tests\Context\ExpectNotToPerformAssertionTrait;
 use PHPUnit\Framework\TestCase;
 
 class LoggingContextTest extends TestCase
 {
-    use ExpectNotToPerformAssertionTrait;
 
     protected ?LoggingContext $loggingContext = null;
 

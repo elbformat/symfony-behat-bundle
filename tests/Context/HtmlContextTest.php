@@ -12,7 +12,6 @@ use Symfony\Component\HttpKernel\KernelInterface;
 class HtmlContextTest extends TestCase
 {
     use DomTrait;
-    use ExpectNotToPerformAssertionTrait;
 
     protected ?KernelInterface $kernel = null;
     protected ?HtmlContext $htmlContext = null;

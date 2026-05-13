@@ -3,6 +3,7 @@
 namespace Elbformat\SymfonyBehatBundle\Tests\Helper;
 
 use Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class ArrayDeepCompareTest extends TestCase
@@ -14,13 +15,13 @@ class ArrayDeepCompareTest extends TestCase
         $this->comp = new ArrayDeepCompare();
     }
 
-    /** @dataProvider arrayContainsProvider */
+    #[DataProvider('arrayContainsProvider')]
     public function testArrayContains(array $container, array $containment): void
     {
         $this->assertTrue($this->comp->arrayContains($container, $containment));
     }
 
-    public function arrayContainsProvider()
+    public static function arrayContainsProvider()
     {
         return [
             [['a', 'b'], /* contains */ ['a']],
@@ -35,16 +36,14 @@ class ArrayDeepCompareTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider arrayContainsNotProvider
-     */
+    #[DataProvider('arrayContainsNotProvider')]
     public function testArrayContainsNot(array $container, array $containment, string $difference)
     {
         $this->assertFalse($this->comp->arrayContains($container, $containment));
         $this->assertEquals($difference, $this->comp->getDifference());
     }
 
-    public function arrayContainsNotProvider()
+    public static function arrayContainsNotProvider()
     {
         return [
             [['a', 'b'], /* doesn't contain */ ['c'], /* because */ '0: c Missing'],
@@ -56,13 +55,13 @@ class ArrayDeepCompareTest extends TestCase
         ];
     }
 
-    /** @dataProvider arrayEqualsProvider */
+    #[DataProvider('arrayEqualsProvider')]
     public function testArrayEquals(array $container, array $containment): void
     {
         $this->assertTrue($this->comp->arrayEquals($container, $containment));
     }
 
-    public function arrayEqualsProvider()
+    public static function arrayEqualsProvider()
     {
         return [
             [['a'], /* equals */ ['a']],
@@ -70,16 +69,14 @@ class ArrayDeepCompareTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider arrayEqualsNotProvider
-     */
+    #[DataProvider('arrayEqualsNotProvider')]
     public function testArrayEqualsNot(array $container, array $containment, string $difference)
     {
         $this->assertFalse($this->comp->arrayEquals($container, $containment));
         $this->assertEquals($difference, $this->comp->getDifference());
     }
 
-    public function arrayEqualsNotProvider()
+    public static function arrayEqualsNotProvider()
     {
         return [
             [['a', 'b'], /* doesn't equal */ ['a'], /* because */ '1: b Missing'],

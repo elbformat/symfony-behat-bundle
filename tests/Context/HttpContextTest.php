@@ -14,7 +14,6 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 class HttpContextTest extends TestCase
 {
-    use ExpectNotToPerformAssertionTrait;
 
     protected ?KernelInterface $kernel = null;
     protected ?HttpContext $httpContext = null;
