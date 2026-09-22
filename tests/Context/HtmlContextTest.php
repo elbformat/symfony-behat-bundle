@@ -1,18 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Tests\Context;
 
 use Behat\Gherkin\Node\TableNode;
 use Elbformat\SymfonyBehatBundle\Browser\State;
 use Elbformat\SymfonyBehatBundle\Context\HtmlContext;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
 
+#[CoversClass(HtmlContext::class)]
 class HtmlContextTest extends TestCase
 {
     use DomTrait;
-    use ExpectNotToPerformAssertionTrait;
 
     protected ?KernelInterface $kernel = null;
     protected ?HtmlContext $htmlContext = null;
@@ -26,10 +29,11 @@ class HtmlContextTest extends TestCase
 
     public function testIRemoveAttributeFrom(): void
     {
-        $this->setDom('<p hidden="hidden">Hello World</p>');
+        $this->setDom('<html><head></head><body><p hidden="hidden">Hello World</p></body></html>');
         $this->htmlContext->iRemoveAttributeFrom('hidden', '//p');
-        $this->assertEquals('<body><p>Hello World</p></body>', $this->state->getCrawler()->html());
+        $this->assertEquals('<head></head><body><p>Hello World</p></body>', $this->state->getCrawler()->html());
     }
+
     public function testIRemoveAttributeFromNotFound(): void
     {
         $this->setDom('<p hidden="hidden">Hello World</p>');

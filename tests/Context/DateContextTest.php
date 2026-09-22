@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Context;
 
 use Elbformat\SymfonyBehatBundle\Context\DateContext;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(DateContext::class)]
 class DateContextTest extends TestCase
 {
     public function testMockDate(): void

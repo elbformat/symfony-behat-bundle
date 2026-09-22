@@ -9,7 +9,6 @@ use Behat\Hook\BeforeScenario;
 use Behat\Step\Given;
 use Behat\Step\Then;
 use Behat\Step\When;
-use DomainException;
 use Elbformat\SymfonyBehatBundle\Application\ApplicationFactory;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
 use Symfony\Component\Console\Input\ArgvInput;
@@ -25,7 +24,7 @@ class CommandContext implements Context
     private ?string $output = null;
     private ?int $returnCode = null;
     /** @var ?resource */
-    private $stream = null;
+    private $stream;
 
     public function __construct(
         protected ApplicationFactory $appFactory,
@@ -72,11 +71,12 @@ class CommandContext implements Context
             $this->output = $output->fetch();
         } catch (\Throwable $t) {
             $prev = $t->getPrevious();
+            $txt = '';
             while (null !== $prev) {
-                echo $prev->getMessage()."\n";
+                $txt .= "\n".$prev->getMessage();
                 $prev = $prev->getPrevious();
             }
-            throw $t;
+            throw new \RuntimeException($t->getMessage().$txt, $t->getCode(), $t);
         }
     }
 
@@ -84,10 +84,10 @@ class CommandContext implements Context
     #[Then('the command is successful')]
     public function theCommandSHasAReturnValueOf(int $code = 0): void
     {
-        if (($this->getReturnCode()) !== ($code)) {
-            $msg = sprintf('Expected the command to return code %d but got %d', $code, $this->getReturnCode());
+        if ($this->getReturnCode() !== $code) {
+            $msg = \sprintf('Expected the command to return code %d but got %d', $code, $this->getReturnCode());
             $msg .= "\n".$this->getOutput();
-            throw new DomainException($msg);
+            throw new \DomainException($msg);
         }
     }
 
@@ -96,7 +96,7 @@ class CommandContext implements Context
     {
         $found = $this->getOutput();
         if (!$this->strComp->stringContains($found, $text)) {
-            throw new DomainException(sprintf("Text not found in\n%s", $found));
+            throw new \DomainException(\sprintf("Text not found in\n%s", $found));
         }
     }
 
@@ -112,7 +112,7 @@ class CommandContext implements Context
     protected function getOutput(): string
     {
         if (null === $this->output) {
-            throw new DomainException('No command has run yet.');
+            throw new \DomainException('No command has run yet.');
         }
 
         return $this->output;
@@ -121,7 +121,7 @@ class CommandContext implements Context
     protected function getReturnCode(): int
     {
         if (null === $this->returnCode) {
-            throw new DomainException('No command has run yet.');
+            throw new \DomainException('No command has run yet.');
         }
 
         return $this->returnCode;

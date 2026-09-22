@@ -52,7 +52,6 @@ class LoggingContext implements Context
             $context = $logEntry->getContext();
             /** @var string $val */
             foreach ($tableRows as $key => $val) {
-                /** @var mixed $foundVal */
                 $foundVal = $context[$key] ?? null;
 
                 // Context missing
@@ -79,7 +78,6 @@ class LoggingContext implements Context
                     if ($dc->arrayEquals($foundVal, $valArr)) {
                         break;
                     }
-                    echo $dc->getDifference();
 
                     continue 2;
                 }

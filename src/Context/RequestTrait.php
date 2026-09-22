@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Context;
 
 use Elbformat\SymfonyBehatBundle\Browser\State;
@@ -25,7 +27,7 @@ trait RequestTrait
     {
         $server['SCRIPT_FILENAME'] = $server['SCRIPT_FILENAME'] ?? 'index.php';
 
-        /** @psalm-suppress MixedArgument */
+        /* @psalm-suppress MixedArgument */
         return Request::create($uri, $method, $parameters, $this->state->getCookies(), $this->convertFileInformation($files) ?? [], $server, $content);
     }
 

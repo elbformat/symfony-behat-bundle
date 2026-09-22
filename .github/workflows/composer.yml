@@ -1,0 +1,26 @@
+name: Composer
+
+on:
+  pull_request:
+    branches: [ 'main' ]
+
+jobs:
+  validate:
+    name: Composer validate (sf-${{matrix.symfony_version}} php-${{matrix.php_version}})
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/php:${{matrix.php_version}}
+    strategy:
+      matrix:
+        php_version: [ '8.3','8.4','8.5' ]
+        # No Symfony 8.x yet, as behat/behat does not support it.
+        symfony_version: [ '5.4', '6.4', '7.4']
+        exclude:
+          - php_version: '8.3'
+            symfony_version: '8.1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pin symfony version
+        run: composer config extra.symfony.require "^${{matrix.symfony_version}}"
+      - name: Run check
+        run: composer validate

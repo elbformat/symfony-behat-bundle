@@ -1,19 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Context;
 
 use Behat\Gherkin\Node\PyStringNode;
 use Elbformat\SymfonyBehatBundle\Context\AbstractApiContext;
 use Elbformat\SymfonyBehatBundle\HttpClient\MockClientCallback;
-use Elbformat\SymfonyBehatBundle\Tests\Context\ExpectNotToPerformAssertionTrait;
 use Elbformat\SymfonyBehatBundle\Tests\fixtures\Context\MyApiContext;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\Response\MockResponse;
 
+#[CoversClass(AbstractApiContext::class)]
 class AbstractApiContextTest extends TestCase
 {
-    use ExpectNotToPerformAssertionTrait;
-
     protected AbstractApiContext $context;
 
     protected function setUp(): void
@@ -98,6 +99,7 @@ EOL;
         $this->context->assertNoCall('/test');
         $this->expectNotToPerformAssertions();
     }
+
     public function testAssertNoApiCallFailed(): void
     {
         $this->performRequest('/test');

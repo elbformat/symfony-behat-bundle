@@ -33,7 +33,6 @@ class HttpContext implements Context
         protected State $state,
         protected StringCompare $strComp,
     ) {
-
     }
 
     #[BeforeScenario]
@@ -80,7 +79,7 @@ class HttpContext implements Context
                 }
             }
         }
-        /** @psalm-suppress MixedArgument false positive */
+        /* @psalm-suppress MixedArgument false positive */
         $this->doRequest($this->buildRequest($url, $method, $server, $rawData ?? null));
     }
 
@@ -92,14 +91,14 @@ class HttpContext implements Context
         if ($code >= 400 || $code < 300) {
             throw new \DomainException('No redirect code found: Code '.$code);
         }
-        $targetUrl = (string)$response->headers->get('Location');
+        $targetUrl = (string) $response->headers->get('Location');
         // This is not url, not even a path. Not RFC compliant but we need to handle it either way
         if (str_starts_with($targetUrl, '?')) {
             $targetUrl = $this->state->getRequest()->getUri().$targetUrl;
         }
         // Another non-rfc conform case - URLs without host
         if (str_starts_with($targetUrl, '/')) {
-            $targetUrl = $this->state->getRequest()->getSchemeAndHttpHost() . $targetUrl;
+            $targetUrl = $this->state->getRequest()->getSchemeAndHttpHost().$targetUrl;
         }
         $this->doRequest($this->buildRequest($targetUrl));
     }
@@ -109,7 +108,7 @@ class HttpContext implements Context
     public function theResponseStatusCodeIs(string $code = '200'): void
     {
         $response = $this->state->getResponse();
-        if ($response->getStatusCode() !== (int)$code) {
+        if ($response->getStatusCode() !== (int) $code) {
             throw new \RuntimeException('Received '.$response->getStatusCode());
         }
     }
@@ -122,7 +121,7 @@ class HttpContext implements Context
         $headers = $response->headers->all();
         foreach ($this->getTableData($table) as $expectedHeader => $expectedValue) {
             foreach ($headers as $key => $values) {
-                if (strtolower((string)$key) === strtolower($expectedHeader)) {
+                if (strtolower((string) $key) === strtolower($expectedHeader)) {
                     foreach ($values as $value) {
                         if ($this->strComp->stringEquals($value, $expectedValue)) {
                             continue 3;
@@ -148,7 +147,7 @@ class HttpContext implements Context
         $response = $this->state->getResponse();
         $httpCode = $response->getStatusCode();
         if (!\in_array($httpCode, [301, 302, 303, 307, 308], true)) {
-            throw new \DomainException(sprintf('Wrong HTTP Code, got %d', $httpCode));
+            throw new \DomainException(\sprintf('Wrong HTTP Code, got %d', $httpCode));
         }
 
         foreach ($response->headers->all() as $key => $val) {

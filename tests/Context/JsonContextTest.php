@@ -1,20 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Tests\Context;
 
 use Behat\Gherkin\Node\PyStringNode;
 use Elbformat\SymfonyBehatBundle\Browser\State;
 use Elbformat\SymfonyBehatBundle\Context\JsonContext;
 use Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
+#[CoversClass(JsonContext::class)]
 class JsonContextTest extends TestCase
 {
     use DomTrait;
-    use ExpectNotToPerformAssertionTrait;
 
     protected ?KernelInterface $kernel = null;
     protected ?JsonContext $jsonContext = null;
@@ -37,7 +40,7 @@ class JsonContextTest extends TestCase
         $this->kernel->expects($this->once())->method('shutdown');
         $this->kernel->expects($this->once())
             ->method('handle')
-            ->with($this->callback(function (Request $request) use ($postData) {
+            ->with($this->callback(static function (Request $request) use ($postData) {
                 if ('/test' !== $request->getPathInfo()) {
                     return false;
                 }
@@ -69,7 +72,7 @@ class JsonContextTest extends TestCase
         $this->kernel->expects($this->once())->method('shutdown');
         $this->kernel->expects($this->once())
             ->method('handle')
-            ->with($this->callback(function (Request $request) use ($postData) {
+            ->with($this->callback(static function (Request $request) use ($postData) {
                 if ('/test' !== $request->getPathInfo()) {
                     return false;
                 }
@@ -128,14 +131,14 @@ class JsonContextTest extends TestCase
     public function testTheResponseJsonContainsNoArray(): void
     {
         $this->setDom('42');
-        $this->expectExceptionMessage("Only arrays can contain something. Got integer");
+        $this->expectExceptionMessage('Only arrays can contain something. Got integer');
         $this->jsonContext->theResponseJsonContains(new PyStringNode(['{"goodbye":"world"}'], 0));
     }
 
     public function testTheResponseJsonContainsNoArrayExpected(): void
     {
         $this->setDom('{"hello":"world","number":42}');
-        $this->expectExceptionMessage("Only arrays can be contained. Got integer");
+        $this->expectExceptionMessage('Only arrays can be contained. Got integer');
         $this->jsonContext->theResponseJsonContains(new PyStringNode(['42'], 0));
     }
 }

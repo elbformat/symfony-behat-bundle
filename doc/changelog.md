@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.5.13
+* Feature: Symfony 7.4 & 8.1 compatibility
+* Change: Moved from circleci to github-actions
+* Feature: Improved test matrix (PHP 8.3 - 8.5, SF 5.4 - 8.1)
+
+## v1.5.12
+* Feature: Symfony 7.3 compatibility 
+
 ## v1.5.11
 * Fix: Escaping of quotes in xpath expressions.
 

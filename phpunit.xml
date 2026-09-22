@@ -1,25 +1,25 @@
-<?xml version="1.0"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" backupGlobals="true" backupStaticAttributes="false" colors="false" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" forceCoversAnnotation="false" processIsolation="false" stopOnError="false" stopOnFailure="false" stopOnIncomplete="false" stopOnSkipped="false" stopOnRisky="false" verbose="false">
-  <coverage processUncoveredFiles="false">
-    <include>
-      <directory suffix=".php">src/</directory>
-    </include>
-    <report>
-      <clover outputFile="build/clover.xml"/>
-      <html outputDirectory="build/coverage/html" lowUpperBound="35" highLowerBound="70"/>
-    </report>
-  </coverage>
-  <testsuites>
-    <testsuite name="unit">
-      <directory>tests/</directory>
-      <exclude>tests/Integration</exclude>
-    </testsuite>
-  </testsuites>
-  <logging>
-    <!--        <log type="coverage-php" target="/tmp/coverage.serialized"/>-->
-    <!--        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>-->
-    <junit outputFile="build/junit.xml"/>
-    <!--        <log type="testdox-html" target="/tmp/testdox.html"/>-->
-    <!--        <log type="testdox-text" target="/tmp/testdox.txt"/>-->
-  </logging>
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         cacheDirectory=".phpunit.cache"
+         executionOrder="defects"
+         requireCoverageMetadata="true"
+         beStrictAboutCoverageMetadata="false"
+         beStrictAboutOutputDuringTests="true"
+         displayDetailsOnPhpunitDeprecations="true"
+         failOnPhpunitDeprecation="true"
+         failOnRisky="true"
+         failOnWarning="true">
+    <testsuites>
+        <testsuite name="default">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <source ignoreIndirectDeprecations="true" restrictNotices="true" restrictWarnings="true">
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
 </phpunit>

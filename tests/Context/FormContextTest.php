@@ -1,23 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Tests\Context;
 
 use Behat\Gherkin\Node\TableNode;
 use Elbformat\SymfonyBehatBundle\Browser\State;
 use Elbformat\SymfonyBehatBundle\Context\FormContext;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DomCrawler\Crawler;
-use Symfony\Component\DomCrawler\Form;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
+#[CoversClass(FormContext::class)]
 class FormContextTest extends TestCase
 {
     use DomTrait;
-    use ExpectNotToPerformAssertionTrait;
 
     protected ?KernelInterface $kernel = null;
     protected ?FormContext $formContext = null;
@@ -139,7 +140,7 @@ class FormContextTest extends TestCase
         $dom = '<form name="test" action="/submit" method="post"><input type="text" name="lorem" value="ipsum"></form>';
         $this->setDom($dom);
         $this->formContext->thePageContainsAFormNamed('test');
-        $this->kernel->expects($this->once())->method('handle')->with($this->callback(function (Request $request) {
+        $this->kernel->expects($this->once())->method('handle')->with($this->callback(static function (Request $request) {
             if ('/submit' !== $request->getRequestUri()) {
                 return false;
             }

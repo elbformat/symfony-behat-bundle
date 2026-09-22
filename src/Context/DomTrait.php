@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Context;
 
-use DOMAttr;
-use DOMNamedNodeMap;
 use Elbformat\SymfonyBehatBundle\Browser\State;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -18,7 +18,7 @@ trait DomTrait
 
     protected function createNotFoundException(string $what, ?Crawler $fallbacks = null): \DomainException
     {
-        $errMsg = sprintf('%s not found.', $what);
+        $errMsg = \sprintf('%s not found.', $what);
         if (null !== $fallbacks) {
             $names = [];
             foreach ($fallbacks as $fallback) {
@@ -31,23 +31,23 @@ trait DomTrait
                 }
                 // Rebuild otherwise
                 $attribs = '';
-                /** @var DOMNamedNodeMap $fallbackAttributes */
+                /** @var \DOMNamedNodeMap $fallbackAttributes */
                 $fallbackAttributes = $fallback->attributes;
-                /** @var DOMAttr $attribute */
+                /** @var \DOMAttr $attribute */
                 foreach ($fallbackAttributes as $attribute) {
-                    $attribs .= sprintf(' %s="%s"', $attribute->nodeName, $attribute->value);
+                    $attribs .= \sprintf(' %s="%s"', $attribute->nodeName, $attribute->value);
                 }
-                $foundTag = sprintf('<%s%s>...%s...</%1$s>', $fallback->nodeName, $attribs, $fallback->textContent);
+                $foundTag = \sprintf('<%s%s>...%s...</%1$s>', $fallback->nodeName, $attribs, $fallback->textContent);
                 $names[] = $foundTag;
             }
             switch (\count($names)) {
                 case 0:
                     break;
                 case 1:
-                    $errMsg .= sprintf(' Did you mean "%s"?', $names[0]);
+                    $errMsg .= \sprintf(' Did you mean "%s"?', $names[0]);
                     break;
                 default:
-                    $errMsg .= sprintf(" Did you mean one of the following?\n%s", implode("\n", $names));
+                    $errMsg .= \sprintf(" Did you mean one of the following?\n%s", implode("\n", $names));
                     break;
             }
         }

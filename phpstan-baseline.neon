@@ -1,0 +1,445 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Browser\\State\:\:getCookies\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Browser/State.php
+
+		-
+			message: '#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 1
+			path: src/Context/AbstractApiContext.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: src/Context/AbstractApiContext.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_shift expects array, list\<string\>\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/AbstractApiContext.php
+
+		-
+			message: '#^Parameter \#1 \$value of function count expects array\|Countable, list\<string\>\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/AbstractApiContext.php
+
+		-
+			message: '#^Parameter \#2 \$string of function explode expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Context/AbstractApiContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\AbstractDatabaseContext\:\:convertAssertionValue\(\) should return bool\|DateTimeInterface\|string\|null but returns mixed\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Context/AbstractDatabaseContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\AbstractDatabaseContext\:\:findEntity\(\) should return \(T of object\)\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Context/AbstractDatabaseContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\AbstractDatabaseContext\:\:newObject\(\) has parameter \$constructorArgs with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Context/AbstractDatabaseContext.php
+
+		-
+			message: '#^Parameter \#1 \$class of function class_exists expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/AbstractDatabaseContext.php
+
+		-
+			message: '#^Parameter \#1 \$stream of function fwrite expects resource, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/CommandContext.php
+
+		-
+			message: '#^Property Elbformat\\SymfonyBehatBundle\\Context\\CommandContext\:\:\$stream \(resource\|null\) does not accept resource\|false\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Context/CommandContext.php
+
+		-
+			message: '#^Cannot access offset ''error'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Cannot access offset ''name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Cannot access offset ''tmp_name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Cannot access offset ''type'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\FormContext\:\:buildRequest\(\) has parameter \$files with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\FormContext\:\:buildRequest\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\FormContext\:\:convertFileInformation\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\FormContext\:\:convertFileInformation\(\) has parameter \$file with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\FormContext\:\:getTableData\(\) should return array\<string, string\> but returns array\<string, list\<string\>\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_keys expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Parameter \#1 \$haystack of function substr_count expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Parameter \#1 \$path of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Parameter \#2 \$array of function array_map expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Parameter \#2 \$originalName of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Parameter \#3 \$mimeType of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Parameter \#4 \$error of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects int\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Parameter \#5 \$files of static method Symfony\\Component\\HttpFoundation\\Request\:\:create\(\) expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/FormContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\HtmlContext\:\:getTableData\(\) should return array\<string, string\> but returns array\<string, list\<string\>\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Context/HtmlContext.php
+
+		-
+			message: '#^Parameter \#1 \$haystack of function substr_count expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/HtmlContext.php
+
+		-
+			message: '#^Cannot access offset ''error'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Cannot access offset ''name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Cannot access offset ''tmp_name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Cannot access offset ''type'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\HttpContext\:\:buildRequest\(\) has parameter \$files with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\HttpContext\:\:buildRequest\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\HttpContext\:\:convertFileInformation\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\HttpContext\:\:convertFileInformation\(\) has parameter \$file with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\HttpContext\:\:getTableData\(\) should return array\<string, string\> but returns array\<string, list\<string\>\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_keys expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Parameter \#1 \$path of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Parameter \#2 \$array of function array_map expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Parameter \#2 \$originalName of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Parameter \#3 \$mimeType of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Parameter \#4 \$error of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects int\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Parameter \#5 \$files of static method Symfony\\Component\\HttpFoundation\\Request\:\:create\(\) expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/HttpContext.php
+
+		-
+			message: '#^Cannot access offset ''error'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Cannot access offset ''name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Cannot access offset ''tmp_name'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Cannot access offset ''type'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\JsonContext\:\:buildRequest\(\) has parameter \$files with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\JsonContext\:\:buildRequest\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\JsonContext\:\:convertFileInformation\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Context\\JsonContext\:\:convertFileInformation\(\) has parameter \$file with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_keys expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Parameter \#1 \$path of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Parameter \#2 \$array of function array_map expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Parameter \#2 \$originalName of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Parameter \#3 \$mimeType of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Parameter \#4 \$error of class Symfony\\Component\\HttpFoundation\\File\\UploadedFile constructor expects int\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Parameter \#5 \$files of static method Symfony\\Component\\HttpFoundation\\Request\:\:create\(\) expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Context/JsonContext.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: src/Context/LoggingContext.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$valArr has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Context/LoggingContext.php
+
+		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 4
+			path: src/Helper/ArrayDeepCompare.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Helper\\ArrayDeepCompare\:\:arrayContains\(\) has parameter \$container with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Helper/ArrayDeepCompare.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Helper\\ArrayDeepCompare\:\:arrayContains\(\) has parameter \$containment with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Helper/ArrayDeepCompare.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Helper\\ArrayDeepCompare\:\:arrayEquals\(\) has parameter \$a with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Helper/ArrayDeepCompare.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Helper\\ArrayDeepCompare\:\:arrayEquals\(\) has parameter \$b with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Helper/ArrayDeepCompare.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\Helper\\ArrayDeepCompare\:\:isAssoc\(\) has parameter \$arr with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Helper/ArrayDeepCompare.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\HttpClient\\MockClientCallback\:\:__invoke\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/HttpClient/MockClientCallback.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\HttpClient\\MockClientCallback\:\:getRequest\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/HttpClient/MockClientCallback.php
+
+		-
+			message: '#^Method Elbformat\\SymfonyBehatBundle\\HttpClient\\MockClientCallback\:\:getRequests\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/HttpClient/MockClientCallback.php
+
+		-
+			message: '#^Property Elbformat\\SymfonyBehatBundle\\HttpClient\\MockClientCallback\:\:\$requests type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/HttpClient/MockClientCallback.php

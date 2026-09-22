@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elbformat\SymfonyBehatBundle\Helper;
 
 /**
- * Do a plain or regex compare, when starts with ~
+ * Do a plain or regex compare, when starts with ~.
  *
  * @author Hannes Giesenow <hannes.giesenow@elbformat.de>
  */
@@ -33,6 +33,7 @@ class StringCompare
             if (!str_ends_with($regex, '$')) {
                 $regex .= '$';
             }
+
             return $this->regexCompare($actual, $regex);
         }
 
@@ -41,6 +42,6 @@ class StringCompare
 
     protected function regexCompare(string $string, string $regex): bool
     {
-        return (bool)preg_match('/'.$regex.'/', $string);
+        return (bool) preg_match('/'.$regex.'/', $string);
     }
 }

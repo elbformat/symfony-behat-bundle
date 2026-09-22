@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Browser;
 
 use Symfony\Component\DomCrawler\Crawler;
@@ -7,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Representation of the browser state with last Request and Response for BrowserContext
+ * Representation of the browser state with last Request and Response for BrowserContext.
  */
 class State
 {
@@ -46,7 +48,7 @@ class State
 
     public function getResponseContent(): string
     {
-        return (string)$this->getResponse()->getContent();
+        return (string) $this->getResponse()->getContent();
     }
 
     public function getRequest(): Request

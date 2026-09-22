@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Tests\Context;
 
 use Behat\Gherkin\Node\PyStringNode;
@@ -7,15 +9,15 @@ use Behat\Gherkin\Node\TableNode;
 use Elbformat\SymfonyBehatBundle\Browser\State;
 use Elbformat\SymfonyBehatBundle\Context\HttpContext;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 
+#[CoversClass(HttpContext::class)]
 class HttpContextTest extends TestCase
 {
-    use ExpectNotToPerformAssertionTrait;
-
     protected ?KernelInterface $kernel = null;
     protected ?HttpContext $httpContext = null;
     protected ?State $state = null;
@@ -30,7 +32,7 @@ class HttpContextTest extends TestCase
     public function testIVisit(): void
     {
         $this->kernel->expects($this->once())->method('shutdown');
-        $this->kernel->expects($this->once())->method('handle')->with($this->callback(function (Request $request) {
+        $this->kernel->expects($this->once())->method('handle')->with($this->callback(static function (Request $request) {
             return '/test' === $request->getPathInfo();
         }))->willReturn(new Response(''));
         $this->httpContext->iVisit('/test');
@@ -39,7 +41,7 @@ class HttpContextTest extends TestCase
     public function testINavigateToWithHeaders(): void
     {
         $this->kernel->expects($this->once())->method('shutdown');
-        $this->kernel->expects($this->once())->method('handle')->with($this->callback(function (Request $request) {
+        $this->kernel->expects($this->once())->method('handle')->with($this->callback(static function (Request $request) {
             if ('/test' !== $request->getPathInfo()) {
                 return false;
             }
@@ -68,7 +70,7 @@ class HttpContextTest extends TestCase
         $this->kernel->expects($this->once())->method('shutdown');
         $this->kernel->expects($this->once())
             ->method('handle')
-            ->with($this->callback(function (Request $request) use ($postData) {
+            ->with($this->callback(static function (Request $request) use ($postData) {
                 if ('/test' !== $request->getPathInfo()) {
                     return false;
                 }
@@ -88,8 +90,8 @@ class HttpContextTest extends TestCase
 
     public function testIFollowTheRedirect(): void
     {
-        $this->state->update(new Request(server:['HTTP_HOST' => 'localhost']), new Response('', 302, ['Location' => '/target']));
-        $this->kernel->method('handle')->with($this->callback(function (Request $request) {
+        $this->state->update(new Request(server: ['HTTP_HOST' => 'localhost']), new Response('', 302, ['Location' => '/target']));
+        $this->kernel->method('handle')->with($this->callback(static function (Request $request) {
             return '/target' === $request->getPathInfo();
         }))->willReturn(new Response('Redirect Target'));
         $this->httpContext->iFollowTheRedirect();
@@ -99,7 +101,7 @@ class HttpContextTest extends TestCase
     public function testIFollowTheRedirectQuery(): void
     {
         $this->state->update(Request::create('http://localhost'), new Response('', 302, ['Location' => '?success=true']));
-        $this->kernel->method('handle')->with($this->callback(function (Request $request) {
+        $this->kernel->method('handle')->with($this->callback(static function (Request $request) {
             return '/?success=true' === $request->getRequestUri();
         }))->willReturn(new Response('Redirect Target'));
         $this->httpContext->iFollowTheRedirect();
@@ -170,7 +172,7 @@ class HttpContextTest extends TestCase
 
     public function testIAmBeingRedirectedToNoLocation(): void
     {
-        $this->state->update(Request::create('/'), new Response('', 302, ));
+        $this->state->update(Request::create('/'), new Response('', 302));
         $this->expectExceptionMessage('No location header found');
         $this->httpContext->iAmBeingRedirectedTo('/redirecttarget');
     }

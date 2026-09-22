@@ -1,0 +1,42 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [ 'main' ]
+
+jobs:
+  unittests:
+    name: phpunit (sf-${{matrix.symfony_version}} php-${{matrix.php_version}})
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}/php:${{matrix.php_version}}
+    strategy:
+      fail-fast: true
+      matrix:
+        php_version: [ '8.3','8.4','8.5' ]
+        symfony_version: [ '5.4', '6.4', '7.4' ]
+        exclude:
+          - php_version: '8.3'
+            symfony_version: '8.1'
+    steps:
+      - uses: actions/checkout@v4
+      - run: composer config extra.symfony.require "^${{matrix.symfony_version}}"
+      - run: composer install
+      - run: vendor/bin/phpunit --coverage-cobertura=build/cobertura.xml
+# Code Quality is not enabled yet as it is not for free
+#      - uses: actions/upload-artifact@v4
+#        with:
+#          name: cobertura-report
+#          path: build/cobertura.xml
+#  coverage:
+#    needs: unittests
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: cobertura-report
+#      - uses: actions/upload-code-coverage@v1
+#        with:
+#          file: cobertura.xml
+#          language: php
+#          label: unittest

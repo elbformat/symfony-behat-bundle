@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Context;
 
 use Behat\Gherkin\Node\PyStringNode;
 use Elbformat\SymfonyBehatBundle\Context\MailerContext;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
 use Elbformat\SymfonyBehatBundle\Mailer\TestTransport;
-use Elbformat\SymfonyBehatBundle\Tests\Context\ExpectNotToPerformAssertionTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mailer\Envelope;
@@ -14,10 +17,9 @@ use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
+#[CoversClass(MailerContext::class)]
 class MailerContextTest extends TestCase
 {
-    use ExpectNotToPerformAssertionTrait;
-
     protected ?KernelInterface $kernel = null;
     protected ?MailerContext $mailerContext = null;
 
@@ -96,60 +98,60 @@ class MailerContextTest extends TestCase
         $this->mailerContext->noEmailIsBeingSent();
     }
 
-    /** @dataProvider theEMailContainsProvider */
-    public function testTheEMailContains(?string $html, ?string $plain, string|PyStringNode $expected): void
+    #[DataProvider('theEMailContainsProvider')]
+    public function testTheEMailContains(?string $html, ?string $plain, string $expected): void
     {
         $this->send(html: $html, plainText: $plain);
         $this->mailerContext->anEmailIsBeingSentToWithSubject('recipient@format-h.com', 'Lorem Ipsum');
         $this->mailerContext->theEMailContains($expected);
+        $this->mailerContext->theEMailContains(stringNode: new PyStringNode([$expected], 0));
         $this->expectNotToPerformAssertions();
     }
 
-    public function theEMailContainsProvider(): array
+    public static function theEMailContainsProvider(): array
     {
         return [
             ['Lorem Ipsum', null, 'rem Ips'],
-            ['Lorem Ipsum', null, new PyStringNode(['rem Ips'], 0)],
             [null, 'Lorem Ipsum', 'rem Ips'],
-            [null, 'Lorem Ipsum', new PyStringNode(['rem Ips'], 0)],
             ['Lorem Ipsum', 'Lorem Ipsum', 'rem Ips'],
-            ['Lorem Ipsum', 'Lorem Ipsum', new PyStringNode(['rem Ips'], 0)],
         ];
     }
 
-    /** @dataProvider theEMailContainsFailProvider */
-    public function testTheEMailContainsFail(?string $html, ?string $plain, string|PyStringNode $expected): void
+    #[DataProvider('theEMailContainsFailProvider')]
+    public function testTheEMailContainsFail(?string $html, ?string $plain, string $expected): void
     {
         $this->send(html: $html, plainText: $plain);
         $this->mailerContext->anEmailIsBeingSentToWithSubject('recipient@format-h.com', 'Lorem Ipsum');
         $this->expectExceptionMessage('Text not found');
         $this->mailerContext->theEMailContains($expected);
+        $this->mailerContext->theEMailContains(stringNode: new PyStringNode([$expected], 0));
     }
 
-    public function theEMailContainsFailProvider(): array
+    public static function theEMailContainsFailProvider(): array
     {
         return [
             ['Lorem Ipsum', 'Lorem Ipsum', 'Dolor sit'],
-            ['Lorem Ipsum', 'Lorem Ipsum', new PyStringNode(['Dolor sit'], 0)],
         ];
     }
 
-    /** @dataProvider theEMailContainsFailProvider */
-    public function testTheEMailDoesNotContain(?string $html, ?string $plain, string|PyStringNode $expected): void
+    #[DataProvider('theEMailContainsFailProvider')]
+    public function testTheEMailDoesNotContain(?string $html, ?string $plain, string $expected): void
     {
         $this->send(html: $html, plainText: $plain);
         $this->mailerContext->anEmailIsBeingSentToWithSubject('recipient@format-h.com', 'Lorem Ipsum');
         $this->mailerContext->theEMailDoesNotContain($expected);
+        $this->mailerContext->theEMailDoesNotContain(stringNode: new PyStringNode([$expected], 0));
         $this->expectNotToPerformAssertions();
     }
 
-    /** @dataProvider theEMailContainsProvider */
-    public function testTheEMailDoesNotContainFail(?string $html, ?string $plain, string|PyStringNode $expected): void
+    #[DataProvider('theEMailContainsProvider')]
+    public function testTheEMailDoesNotContainFail(?string $html, ?string $plain, string $expected): void
     {
         $this->send(html: $html, plainText: $plain);
         $this->mailerContext->anEmailIsBeingSentToWithSubject('recipient@format-h.com', 'Lorem Ipsum');
         $this->expectExceptionMessage('Text found!');
         $this->mailerContext->theEMailDoesNotContain($expected);
+        $this->mailerContext->theEMailDoesNotContain(stringNode: new PyStringNode([$expected], 0));
     }
 
     public function testTheEMailIsAlsoBeingSentTo(): void
@@ -218,7 +220,7 @@ class MailerContextTest extends TestCase
         ?string $plainText = null,
         ?string $attachment = null,
     ): void {
-        if (is_string($to)) {
+        if (\is_string($to)) {
             $to = [$to];
         }
         $transport = new TestTransport();
@@ -237,5 +239,4 @@ class MailerContextTest extends TestCase
         }
         $transport->send($message, $envelope);
     }
-
 }

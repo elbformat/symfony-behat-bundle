@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Elbformat\SymfonyBehatBundle\Helper;
 
-use DomainException;
-
 /**
  * Helper to find the difference in two complex array structures.
  *
@@ -15,26 +13,24 @@ class ArrayDeepCompare
 {
     protected ?string $difference = null;
 
-    /**
-     * @param mixed $a
-     * @param mixed $b
-     */
-    public function arrayEquals($a, $b): bool
+    public function arrayEquals(array $a, array $b): bool
     {
         $this->difference = null;
+
         return !$this->hasDiff($a, $b);
     }
 
     public function arrayContains(array $container, array $containment): bool
     {
         $this->difference = null;
+
         return !$this->hasDiff($containment, $container, '', false);
     }
 
     public function getDifference(): string
     {
         if (null === $this->difference) {
-            throw new DomainException('No difference');
+            throw new \DomainException('No difference');
         }
 
         return $this->difference;
@@ -52,17 +48,14 @@ class ArrayDeepCompare
     /**
      * Check if two values/arrays are equal.
      *
-     * @param mixed $a
-     * @param mixed $b
-     *
-     * @throws DomainException when differs
+     * @throws \DomainException when differs
      */
-    protected function hasDiff($a, $b, string $path = '', bool $reverseCheck = true): bool
+    protected function hasDiff(mixed $a, mixed $b, string $path = '', bool $reverseCheck = true): bool
     {
         if (!\is_array($a) && !\is_array($b)) {
             // Scalar values -> compare
             if ($a !== $b) {
-                $this->difference = sprintf('%s: (%s) %s != (%s) %s', $path, \gettype($a), (string)($a ?? ''), \gettype($b), (string)($b ?? ''));
+                $this->difference = \sprintf('%s: (%s) %s != (%s) %s', $path, \gettype($a), (string) ($a ?? ''), \gettype($b), (string) ($b ?? ''));
 
                 return true;
             }
@@ -72,7 +65,7 @@ class ArrayDeepCompare
 
         if (!\is_array($a) || !\is_array($b)) {
             // One array -> mismatch
-            $this->difference = sprintf('%s: <%s> != <%s>', $path, \gettype($a), \gettype($b));
+            $this->difference = \sprintf('%s: <%s> != <%s>', $path, \gettype($a), \gettype($b));
 
             return true;
         }
@@ -85,7 +78,7 @@ class ArrayDeepCompare
             if ($isAssoc) {
                 // Key does not exist in b
                 if (!\array_key_exists($k, $b)) {
-                    $this->difference = sprintf('%s: Missing', $subpath);
+                    $this->difference = \sprintf('%s: Missing', $subpath);
 
                     return true;
                 }
@@ -106,7 +99,7 @@ class ArrayDeepCompare
                         continue 2;
                     }
                 }
-                $this->difference = sprintf('%s: %s Missing', $subpath, (string) $v);
+                $this->difference = \sprintf('%s: %s Missing', $subpath, (string) $v);
 
                 return true;
             }
@@ -116,7 +109,7 @@ class ArrayDeepCompare
         if ($reverseCheck && \count($b)) {
             $item = (string) array_reverse($b)[0];
             $subpath = ($path ? $path.'.' : '').$item;
-            $this->difference = sprintf('%s: Extra', $subpath);
+            $this->difference = \sprintf('%s: Extra', $subpath);
 
             return true;
         }

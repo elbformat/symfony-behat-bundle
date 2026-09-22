@@ -69,14 +69,14 @@ abstract class AbstractDatabaseContext implements Context
         $pa = new PropertyAccessor();
         foreach ($tableData as $key => $val) {
             // Skip, when entry was already consumed in constructor
-            if (array_key_exists($key, $constructorArgs)) {
+            if (\array_key_exists($key, $constructorArgs)) {
                 continue;
             }
             /** @psalm-suppress MixedAssignment */
             $val = $this->mapTableValue($key, $val);
             $pa->setValue($obj, $key, $val);
         }
-        /** @psalm-suppress PossiblyInvalidArgument */
+        /* @psalm-suppress PossiblyInvalidArgument */
         $this->em->persist($obj);
         $this->em->flush();
         $this->em->clear();
@@ -87,23 +87,23 @@ abstract class AbstractDatabaseContext implements Context
     {
         $entity1 = $this->getRepo()->find($id1);
         if (null === $entity1) {
-            throw new \DomainException(sprintf('%s with ID %d not found', $this->getClassName(), $id1));
+            throw new \DomainException(\sprintf('%s with ID %d not found', $this->getClassName(), $id1));
         }
         $entity2 = $this->findEntity($class2, $id2);
         if (null === $entity2) {
-            throw new \DomainException(sprintf('%s with ID %d not found', $class2, $id2));
+            throw new \DomainException(\sprintf('%s with ID %d not found', $class2, $id2));
         }
         $pa = new PropertyAccessor();
         // We need to do this manually as the PA does not support adder/remover by now.
         $collection = $pa->getValue($entity1, $relationName);
         if (!$collection instanceof Collection) {
-            throw new \DomainException(sprintf('Property "%s" is not a collection', $relationName));
+            throw new \DomainException(\sprintf('Property "%s" is not a collection', $relationName));
         }
         $collection->add($entity2);
         if (null !== $reverseRelationName) {
             $collection2 = $pa->getValue($entity2, $reverseRelationName);
             if (!$collection2 instanceof Collection) {
-                throw new \DomainException(sprintf('Property "%s" is not a collection', $reverseRelationName));
+                throw new \DomainException(\sprintf('Property "%s" is not a collection', $reverseRelationName));
             }
             $collection2->add($entity1);
         }
@@ -157,20 +157,20 @@ abstract class AbstractDatabaseContext implements Context
     {
         $mainEntry = $this->getRepo()->find($containerId);
         if (null === $mainEntry) {
-            throw new \DomainException(sprintf('%s with ID %d not found', $this->getClassName(), $containerId));
+            throw new \DomainException(\sprintf('%s with ID %d not found', $this->getClassName(), $containerId));
         }
         $containingEntry = $this->findEntity($containingClass, $containingId);
         if (null === $containingEntry) {
-            throw new \DomainException(sprintf('%s with ID %d not found', $containingClass, $containingId));
+            throw new \DomainException(\sprintf('%s with ID %d not found', $containingClass, $containingId));
         }
         $pa = new PropertyAccessor();
         $collection = $pa->getValue($mainEntry, $relation);
         if (!$collection instanceof Collection) {
-            throw new \DomainException(sprintf('Property "%s" is not a collection.', $relation));
+            throw new \DomainException(\sprintf('Property "%s" is not a collection.', $relation));
         }
-        /** @psalm-suppress RedundantConditionGivenDocblockType */
+        /* @psalm-suppress RedundantConditionGivenDocblockType */
         if (!$collection->contains($containingEntry)) {
-            throw new \DomainException(sprintf('%s(%d) not in collection.', $containingClass, $containerId));
+            throw new \DomainException(\sprintf('%s(%d) not in collection.', $containingClass, $containerId));
         }
     }
 
@@ -185,7 +185,6 @@ abstract class AbstractDatabaseContext implements Context
         throw new \DomainException('Found');
     }
 
-
     protected function exec(string $query): void
     {
         $this->em->getConnection()->executeQuery($query);
@@ -195,10 +194,10 @@ abstract class AbstractDatabaseContext implements Context
     {
         $type = $this->getTypeOfProperty($key);
 
-        /** @psalm-suppress ArgumentTypeCoercion */
+        /* @psalm-suppress ArgumentTypeCoercion */
         switch (true) {
             case null !== $type && enum_exists($type):
-                return constant($type.'::'.$value);
+                return \constant($type.'::'.$value);
                 // Reference to another entity with <Entity>::<ID>
             case preg_match('/^(.+)::(.+)$/', $value, $match):
                 $className = preg_replace('/[^\\\]+$/', $match[1], $this->getClassName());
@@ -213,9 +212,9 @@ abstract class AbstractDatabaseContext implements Context
             case 'DateTime' === $type:
                 return new \DateTime($value);
             case 'int' === $type:
-                return (int)$value;
+                return (int) $value;
             case 'float' === $type:
-                return (float)$value;
+                return (float) $value;
             case 'bool' === $type:
                 if ('true' === $value) {
                     return true;
@@ -224,15 +223,15 @@ abstract class AbstractDatabaseContext implements Context
                     return false;
                 }
 
-                return (bool)$value;
+                return (bool) $value;
             case 'array' === $type:
-                return json_decode($value, true, flags: JSON_THROW_ON_ERROR);
+                return json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
             default:
                 return $value;
         }
     }
 
-    /** @return string|null|bool|\DateTimeInterface */
+    /** @return string|bool|\DateTimeInterface|null */
     protected function convertAssertionValue(string $value, ?string $type): mixed
     {
         if ('NULL' === $value) {
@@ -240,7 +239,7 @@ abstract class AbstractDatabaseContext implements Context
         }
 
         return match ($type) {
-            'array' => json_decode($value, false, 512, JSON_THROW_ON_ERROR),
+            'array' => json_decode($value, false, 512, \JSON_THROW_ON_ERROR),
             'bool' => 'false' !== $value && '0' !== $value,
             'DateTimeInterface', 'DateTime' => new \DateTime($value),
             'DateTimeImmutable' => new \DateTimeImmutable($value),
@@ -252,11 +251,10 @@ abstract class AbstractDatabaseContext implements Context
     protected function printAlternatives(array $data): string
     {
         $pa = new PropertyAccessor();
-        $return = sprintf("| %-20s | %-20s | %-20s |\n", 'Field', 'Expected', 'Found');
+        $return = \sprintf("| %-20s | %-20s | %-20s |\n", 'Field', 'Expected', 'Found');
         foreach ($this->getRepo()->findAll() as $item) {
-            $return .= sprintf("| %-20s | %-20s | %-20s |\n", str_repeat('-', 20), str_repeat('-', 20), str_repeat('-', 20));
+            $return .= \sprintf("| %-20s | %-20s | %-20s |\n", str_repeat('-', 20), str_repeat('-', 20), str_repeat('-', 20));
             foreach ($data as $key => $val) {
-                /** @var mixed $realVal */
                 $realVal = $pa->getValue($item, $key);
                 $type = $this->getTypeOfProperty($key);
                 switch (true) {
@@ -279,28 +277,28 @@ abstract class AbstractDatabaseContext implements Context
                         $collectionEntryStrings = [];
                         foreach ($realVal->toArray() as $collEntry) {
                             switch (true) {
-                                case is_scalar($collEntry):
-                                case is_object($collEntry) && method_exists($collEntry, '__toString'):
-                                    $collectionEntryStrings[] = (string)$collEntry;
+                                case \is_scalar($collEntry):
+                                case \is_object($collEntry) && method_exists($collEntry, '__toString'):
+                                    $collectionEntryStrings[] = (string) $collEntry;
                                     break;
                                 default:
-                                    $collectionEntryStrings[] = '<'.gettype($collEntry).'>';
+                                    $collectionEntryStrings[] = '<'.\gettype($collEntry).'>';
                                     break;
                             }
                         }
                         $realVal = implode(' / ', $collectionEntryStrings);
 
                         break;
-                    case is_object($realVal) && method_exists($realVal, '__toString'):
+                    case \is_object($realVal) && method_exists($realVal, '__toString'):
                         $realVal = (string) $realVal;
                 }
                 if (null === $realVal) {
                     $realVal = '<NULL>';
                 }
-                if (!is_scalar($realVal)) {
-                    $realVal = '<'.gettype($realVal).'>';
+                if (!\is_scalar($realVal)) {
+                    $realVal = '<'.\gettype($realVal).'>';
                 }
-                $return .= sprintf("| %-20s | %20s | %20s |\n", $key, $val, (string)$realVal);
+                $return .= \sprintf("| %-20s | %20s | %20s |\n", $key, $val, (string) $realVal);
             }
         }
 
@@ -312,7 +310,7 @@ abstract class AbstractDatabaseContext implements Context
     {
         $className = $this->getClassName();
 
-        /** @psalm-suppress MixedMethodCall */
+        /* @psalm-suppress MixedMethodCall */
         return new $className(...$constructorArgs);
     }
 
@@ -326,11 +324,12 @@ abstract class AbstractDatabaseContext implements Context
      * @param class-string $entityName
      *
      * @psalm-suppress InvalidReturnType
+     *
      * @return ?T
      */
     protected function findEntity(string $entityName, int $id): ?object
     {
-        /** @psalm-suppress InvalidReturnStatement */
+        /* @psalm-suppress InvalidReturnStatement */
         return $this->em->getRepository($entityName)->find($id);
     }
 
@@ -348,6 +347,7 @@ abstract class AbstractDatabaseContext implements Context
 
     /**
      * @param array<string,string> $data
+     *
      * @return array<string,mixed>
      */
     protected function getConstructorArgsFromData(array $data): array
@@ -361,7 +361,7 @@ abstract class AbstractDatabaseContext implements Context
         $constructorParams = [];
         foreach ($constructorArgs as $arg) {
             $argName = $arg->getName();
-            /** @psalm-suppress MixedAssignment */
+            /* @psalm-suppress MixedAssignment */
             $constructorParams[$argName] = $this->mapTableValue($argName, $data[$argName] ?? $this->getDefaultValue($argName));
         }
 

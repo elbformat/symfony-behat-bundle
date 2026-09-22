@@ -32,24 +32,24 @@ abstract class AbstractApiContext implements Context
             $requests = MockClientCallback::getRequests();
             foreach (array_keys($requests) as $key) {
                 [$method, $url] = explode('/', $key, 2);
-                $text .= sprintf('%s %s', $method, $url);
+                $text .= \sprintf('%s %s', $method, $url);
             }
 
             throw new \DomainException($text);
         }
         if (null !== $content) {
-            $expected = json_decode($content->getRaw(), true, flags: JSON_THROW_ON_ERROR);
-            if (!is_array($expected)) {
-                throw new \DomainException(sprintf('Only arrays can be matched. Got %s', gettype($expected)));
+            $expected = json_decode($content->getRaw(), true, flags: \JSON_THROW_ON_ERROR);
+            if (!\is_array($expected)) {
+                throw new \DomainException(\sprintf('Only arrays can be matched. Got %s', \gettype($expected)));
             }
-            $got = json_decode((string)$data['body'], true, flags: JSON_THROW_ON_ERROR);
-            if (!is_array($got)) {
-                throw new \DomainException(sprintf('Only arrays can be matched. Got %s', gettype($got)));
+            $got = json_decode((string) $data['body'], true, flags: \JSON_THROW_ON_ERROR);
+            if (!\is_array($got)) {
+                throw new \DomainException(\sprintf('Only arrays can be matched. Got %s', \gettype($got)));
             }
             $dc = new ArrayDeepCompare();
             if (!$dc->arrayEquals($got, $expected)) {
-                $gotJson = json_encode($got, JSON_PRETTY_PRINT);
-                $error = sprintf("Got: \n%s\n%s", $gotJson, $dc->getDifference());
+                $gotJson = json_encode($got, \JSON_PRETTY_PRINT);
+                $error = \sprintf("Got: \n%s\n%s", $gotJson, $dc->getDifference());
 
                 throw new \DomainException($error);
             }
