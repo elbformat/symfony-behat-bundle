@@ -8,9 +8,7 @@ use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
 use Behat\Step\Then;
 use Behat\Step\When;
-use DOMElement;
 use Elbformat\SymfonyBehatBundle\Browser\State;
-use Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\DomCrawler\Field\ChoiceFormField;
@@ -27,9 +25,9 @@ use Symfony\Component\HttpKernel\KernelInterface;
  */
 class FormContext implements Context
 {
+    use DomTrait;
     use RequestTrait;
     use TableTrait;
-    use DomTrait;
 
     protected ?Form $lastForm = null;
     protected ?Crawler $lastFormCrawler = null;
@@ -40,7 +38,6 @@ class FormContext implements Context
         protected string $projectDir,
         protected StringCompare $strComp,
     ) {
-
     }
 
     #[When('I use form :name')]
@@ -48,7 +45,7 @@ class FormContext implements Context
     public function thePageContainsAFormNamed(string $name): void
     {
         $crawler = $this->getCrawler();
-        $form = $crawler->filterXpath(sprintf('//form[@name="%s"]', $name));
+        $form = $crawler->filterXpath(\sprintf('//form[@name="%s"]', $name));
         if (!$form->count()) {
             throw $this->createNotFoundException('Form', $crawler->filterXPath('//form'));
         }
@@ -87,7 +84,7 @@ class FormContext implements Context
     {
         $select = $this->getLastForm()->get($name);
         if (!$select instanceof ChoiceFormField) {
-            throw new \DomainException(sprintf('%s is not a choice form field', $name));
+            throw new \DomainException(\sprintf('%s is not a choice form field', $name));
         }
         if (str_contains($value, ',')) {
             $value = explode(',', $value);
@@ -100,10 +97,10 @@ class FormContext implements Context
     {
         $field = $this->getLastForm()->get($name);
         if (!$field instanceof FileFormField) {
-            throw new \DomainException(sprintf('%s is not a file form field', $name));
+            throw new \DomainException(\sprintf('%s is not a file form field', $name));
         }
         if (!file_exists($this->projectDir.'/'.$fixture)) {
-            throw new \DomainException(sprintf('Fixture file not found at %s', $this->projectDir.'/'.$fixture));
+            throw new \DomainException(\sprintf('Fixture file not found at %s', $this->projectDir.'/'.$fixture));
         }
         $field->upload($this->projectDir.'/'.$fixture);
     }
@@ -113,7 +110,7 @@ class FormContext implements Context
     {
         $form = $this->getLastForm();
         $newInput = $form->getNode()->ownerDocument?->createElement('input');
-        if (!$newInput instanceof DOMElement) {
+        if (!$newInput instanceof \DOMElement) {
             throw new \DomainException('Error creating element');
         }
         $newInput->setAttribute('name', $name);
@@ -130,7 +127,7 @@ class FormContext implements Context
     public function iRemoveAnInputField(string $name): void
     {
         $inputNode = $this->getLastFormCrawler()->filterXPath("//input[@name='".$name."']")->getNode(0);
-        if (!$inputNode instanceof DOMElement) {
+        if (!$inputNode instanceof \DOMElement) {
             throw new \DomainException('Field not found');
         }
         $inputNode->remove();
@@ -141,7 +138,7 @@ class FormContext implements Context
     public function iRemoveASelectField(string $name): void
     {
         $inputNode = $this->getLastFormCrawler()->filterXPath("//select[@name='".$name."']")->getNode(0);
-        if (!$inputNode instanceof DOMElement) {
+        if (!$inputNode instanceof \DOMElement) {
             throw new \DomainException('Field not found');
         }
         $inputNode->remove();
@@ -155,7 +152,7 @@ class FormContext implements Context
         $form = $this->getLastForm();
         $values = $form->getPhpValues();
         if (null !== $buttonName) {
-            $buttonTag = $this->getCrawler()->filterXpath(sprintf('//button[@name="%s"]', $buttonName));
+            $buttonTag = $this->getCrawler()->filterXpath(\sprintf('//button[@name="%s"]', $buttonName));
             $buttonValue = $buttonTag->attr('value');
 
             $qs = http_build_query([$buttonName => $buttonValue ?? ''], '', '&');
@@ -173,7 +170,7 @@ class FormContext implements Context
     {
         $inputs = $this->getLastFormCrawler()->filterXPath('//input');
 
-        /** @var DOMElement $input */
+        /** @var \DOMElement $input */
         foreach ($inputs as $input) {
             foreach ($this->getTableData($attribs) as $attrName => $attrVal) {
                 if (!$this->strComp->stringEquals($input->getAttribute($attrName), $attrVal)) {
@@ -192,7 +189,7 @@ class FormContext implements Context
     {
         $selects = $this->getLastFormCrawler()->filterXPath('//select');
 
-        /** @var DOMElement $select */
+        /** @var \DOMElement $select */
         foreach ($selects as $select) {
             foreach ($this->getTableData($attribs) as $attrName => $attrVal) {
                 if (!$this->strComp->stringEquals($select->getAttribute($attrName), $attrVal)) {
@@ -212,11 +209,11 @@ class FormContext implements Context
     {
         $crawler = $this->getLastFormCrawler();
         if (null !== $label) {
-            $options = $crawler->filterXpath(sprintf('//select[@name="%s"]/option[text()="%s"]', $select, $label));
+            $options = $crawler->filterXpath(\sprintf('//select[@name="%s"]/option[text()="%s"]', $select, $label));
         } else {
-            $options = $crawler->filterXpath(sprintf('//select[@name="%s"]/option', $select));
+            $options = $crawler->filterXpath(\sprintf('//select[@name="%s"]/option', $select));
         }
-        /** @var DOMElement $option */
+        /** @var \DOMElement $option */
         foreach ($options as $option) {
             foreach ($this->getTableData($tableNode) as $attrName => $attrVal) {
                 // Attributes didn't match -> try the next one
@@ -243,18 +240,13 @@ class FormContext implements Context
         throw new \DomainException('Option found');
     }
 
-    /************/
     /* INTERNAL */
-    /************/
 
     protected function getFormField(string $name): FormField
     {
         $formField = $this->getLastForm()->get($name);
-        if (is_array($formField)) {
-            throw new \DomainException(sprintf('%s is not a single form field.', $name));
-        }
-        if (!$formField instanceof FormField) {
-            throw new \DomainException(sprintf('%s is not a form field.', $name));
+        if (\is_array($formField)) {
+            throw new \DomainException(\sprintf('%s is not a single form field.', $name));
         }
 
         return $formField;
@@ -268,14 +260,14 @@ class FormContext implements Context
             return $formField;
         }
         // Not even a collection
-        if (!is_array($formField)) {
-            throw new \DomainException(sprintf('%s is not a choice form field', $name));
+        if (!\is_array($formField)) {
+            throw new \DomainException(\sprintf('%s is not a choice form field', $name));
         }
         foreach ($formField as $formFiel) {
             if (!$formFiel instanceof ChoiceFormField) {
                 continue;
             }
-            /** @psalm-suppress InternalMethod */
+            /* @psalm-suppress InternalMethod */
             if ($value === $formFiel->availableOptionValues()[0]) {
                 return $formFiel;
             }
@@ -314,5 +306,4 @@ class FormContext implements Context
 
         return $this->lastFormCrawler;
     }
-
 }

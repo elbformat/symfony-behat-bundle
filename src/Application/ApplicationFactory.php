@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Application;
 
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
- * Factories makes stuff unit-testable
+ * Factories makes stuff unit-testable.
  *
  * @author Hannes Giesenow <hannes.giesenow@elbformat.de>
  */
@@ -24,6 +26,7 @@ class ApplicationFactory
         $application = new Application($this->kernel);
         $application->setAutoExit(false);
         $application->setCatchExceptions(false);
+
         return $application;
     }
 }

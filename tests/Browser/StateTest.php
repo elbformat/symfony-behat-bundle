@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Tests\Browser;
 
 use Elbformat\SymfonyBehatBundle\Browser\State;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+#[CoversClass(State::class)]
 class StateTest extends TestCase
 {
     public function testReset(): void

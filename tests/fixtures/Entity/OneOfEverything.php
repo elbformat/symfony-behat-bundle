@@ -18,7 +18,7 @@ class OneOfEverything
     protected ?\DateTime $dt;
     protected ?\DateTimeImmutable $dti = null;
     protected ?\DateTimeInterface $dtif = null;
-    /** @var Collection<int,self>  */
+    /** @var Collection<int,self> */
     protected Collection $collection;
     protected MyBackedEnum $backedEnum;
     protected MyEnum $enum;
@@ -133,12 +133,12 @@ class OneOfEverything
         $this->enum = $enum;
     }
 
-    public function getSelf(): OneOfEverything
+    public function getSelf(): self
     {
         return $this->self;
     }
 
-    public function setSelf(OneOfEverything $self): void
+    public function setSelf(self $self): void
     {
         $this->self = $self;
     }

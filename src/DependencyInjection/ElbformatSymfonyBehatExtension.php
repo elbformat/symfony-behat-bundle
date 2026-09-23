@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\DependencyInjection;
 
 use Elbformat\SymfonyBehatBundle\Context\CommandContext;

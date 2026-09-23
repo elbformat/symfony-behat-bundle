@@ -1,17 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Context;
 
 use Behat\Gherkin\Node\TableNode;
 use Elbformat\SymfonyBehatBundle\Context\LoggingContext;
 use Elbformat\SymfonyBehatBundle\Logger\TestLogger;
-use Elbformat\SymfonyBehatBundle\Tests\Context\ExpectNotToPerformAssertionTrait;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(LoggingContext::class)]
 class LoggingContextTest extends TestCase
 {
-    use ExpectNotToPerformAssertionTrait;
-
     protected ?LoggingContext $loggingContext = null;
 
     protected function setUp(): void
@@ -108,5 +109,4 @@ class LoggingContextTest extends TestCase
         $this->expectExceptionMessage('ERROR: This is an error');
         $this->loggingContext->theLogContainsAnEntry('error', 'This is an error', new TableNode([['lorem', '{"ipsum": "sit"}']]));
     }
-
 }

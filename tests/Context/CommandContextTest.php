@@ -1,15 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Elbformat\SymfonyBehatBundle\Tests\Context;
 
 use Elbformat\SymfonyBehatBundle\Application\ApplicationFactory;
 use Elbformat\SymfonyBehatBundle\Context\CommandContext;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[CoversClass(CommandContext::class)]
 class CommandContextTest extends TestCase
 {
     protected ?CommandContext $commandContext = null;
@@ -40,7 +44,7 @@ class CommandContextTest extends TestCase
 
     public function testIRunCommand(): void
     {
-        $this->application->expects($this->once())->method('run')->with($this->callback(function ($input) {
+        $this->application->expects($this->once())->method('run')->with($this->callback(static function ($input) {
             return 'elbformat:behat:test' === $input->getFirstArgument();
         }));
         $this->commandContext->iRunCommand('elbformat:behat:test');
@@ -49,7 +53,7 @@ class CommandContextTest extends TestCase
     public function testIRunCommandNotFound(): void
     {
         $this->application->method('run')->willThrowException(new \DomainException('Unknown command', 0, new \DomainException('because')));
-        $this->expectExceptionMessage('Unknown command');
+        $this->expectExceptionMessageMatches('/^Unknown command/');
         $this->commandContext->iRunCommand('elbformat:behat:test');
     }
 
@@ -70,17 +74,20 @@ class CommandContextTest extends TestCase
 
     public function testTheCommandOutputs(): void
     {
-        $this->application->expects($this->once())->method('run')->willReturnCallback(function (InputInterface $input, OutputInterface $output) {
+        $this->application->expects($this->once())->method('run')->willReturnCallback(static function (InputInterface $input, OutputInterface $output) {
             $output->write('Lorem Ipsum');
+
             return 0;
         });
         $this->commandContext->iRunCommand('elbformat:behat:test');
         $this->commandContext->theCommandOutputs('Lorem Ipsum');
     }
+
     public function testTheCommandOutputsFails(): void
     {
-        $this->application->method('run')->willReturnCallback(function (InputInterface $input, OutputInterface $output) {
+        $this->application->method('run')->willReturnCallback(static function (InputInterface $input, OutputInterface $output) {
             $output->write('Lorem Ipsum');
+
             return 0;
         });
         $this->expectExceptionMessage("Text not found in\nLorem Ipsum");
@@ -90,20 +97,23 @@ class CommandContextTest extends TestCase
 
     public function testtheCommandDoesNotOutput(): void
     {
-        $this->application->expects($this->once())->method('run')->willReturnCallback(function (InputInterface $input, OutputInterface $output) {
+        $this->application->expects($this->once())->method('run')->willReturnCallback(static function (InputInterface $input, OutputInterface $output) {
             $output->write('Lorem Ipsum');
+
             return 0;
         });
         $this->commandContext->iRunCommand('elbformat:behat:test');
         $this->commandContext->theCommandDoesNotOutput('Hello World');
     }
+
     public function testTheCommandDoesNotOutputFails(): void
     {
-        $this->application->method('run')->willReturnCallback(function (InputInterface $input, OutputInterface $output) {
+        $this->application->method('run')->willReturnCallback(static function (InputInterface $input, OutputInterface $output) {
             $output->write('Lorem Ipsum');
+
             return 0;
         });
-        $this->expectExceptionMessage("Text found");
+        $this->expectExceptionMessage('Text found');
         $this->commandContext->iRunCommand('elbformat:behat:test');
         $this->commandContext->theCommandDoesNotOutput('Lorem Ipsum');
     }

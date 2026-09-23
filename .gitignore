@@ -1,6 +1,7 @@
-.idea
-build
-vendor
-composer.lock
-.php-cs-fixer.cache
-.phpunit.result.cache
+/.idea
+/build
+/vendor
+/.php-cs-fixer.cache
+/.phpunit.cache
+/compose.override.yaml
+/composer.lock

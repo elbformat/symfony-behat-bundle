@@ -135,7 +135,7 @@ class MailerContext implements Context
                 return;
             }
         }
-        throw new \DomainException(sprintf('No attachment with name %s found.', $name));
+        throw new \DomainException(\sprintf('No attachment with name %s found.', $name));
     }
 
     #[Then('the e-mail attachment equals fixture :fixture')]
@@ -152,7 +152,7 @@ class MailerContext implements Context
         $attachmentHash = md5(base64_decode($this->lastAttachment->bodyToString()));
 
         if ($fixtureHash !== $attachmentHash) {
-            throw new \DomainException(sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->getFilename() ?? ''));
+            throw new \DomainException(\sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->getFilename() ?? ''));
         }
     }
 
@@ -172,7 +172,7 @@ class MailerContext implements Context
             foreach ($mail->getTo() as $to) {
                 $tos[] = $to->getAddress();
             }
-            $mailText[] = sprintf("From: %s\n  To: %s\n  Subject: %s", implode(',', $froms), implode(',', $tos), $mail->getSubject() ?? '');
+            $mailText[] = \sprintf("From: %s\n  To: %s\n  Subject: %s", implode(',', $froms), implode(',', $tos), $mail->getSubject() ?? '');
         }
 
         return implode("\n  ---\n  ", $mailText);

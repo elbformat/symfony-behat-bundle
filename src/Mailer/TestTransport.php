@@ -6,7 +6,6 @@ namespace Elbformat\SymfonyBehatBundle\Mailer;
 
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\Exception\TransportException;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Email;
@@ -32,14 +31,14 @@ class TestTransport implements TransportInterface
             throw new TransportException('Failed to send message');
         }
         if (!$message instanceof Message) {
-            throw new \RuntimeException(sprintf('Mailer can only send messages, not %s', get_class($message)));
+            throw new \RuntimeException(\sprintf('Mailer can only send messages, not %s', $message::class));
         }
         $email = MessageConverter::toEmail($message);
         self::$mails[] = $email;
 
         $envelope = null !== $envelope ? clone $envelope : Envelope::create($message);
 
-        /** @psalm-suppress InternalMethod */
+        /* @psalm-suppress InternalMethod */
         return new SentMessage($message, $envelope);
     }
 

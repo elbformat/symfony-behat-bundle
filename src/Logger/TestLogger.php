@@ -18,19 +18,18 @@ class TestLogger extends AbstractLogger
     }
 
     /**
-     * @param mixed $level
      * @param \Stringable|string $message
-     * @param mixed[] $context
+     * @param mixed[]            $context
      */
     public function log($level, $message, array $context = []): void
     {
-        if (!is_string($level)) {
+        if (!\is_string($level)) {
             $level = LogLevel::ERROR;
         }
         if (LogLevel::DEBUG === $level || LogLevel::INFO === $level) {
             return;
         }
-        self::$logs[$level][] = new LogEntry((string)$message, $context);
+        self::$logs[$level][] = new LogEntry((string) $message, $context);
     }
 
     /** @return LogEntry[] */

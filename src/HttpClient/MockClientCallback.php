@@ -42,7 +42,7 @@ class MockClientCallback
     {
         $key = $method.'/'.$url;
         if (!isset(self::$requests[$key])) {
-            throw new \DomainException(sprintf('No response found for %s %s', $method, $url));
+            throw new \DomainException(\sprintf('No response found for %s %s', $method, $url));
         }
 
         return self::$requests[$key];

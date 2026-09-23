@@ -9,7 +9,6 @@ use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 use Behat\Step\Then;
 use Behat\Step\When;
-use DOMElement;
 use Elbformat\SymfonyBehatBundle\Browser\State;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
 
@@ -29,9 +28,8 @@ class HtmlContext implements Context
     ) {
     }
 
-    /********/
     /* WHEN */
-    /********/
+
     #[When('I remove attribute :attr from :xpath')]
     public function iRemoveAttributeFrom(string $attr, string $xpath): void
     {
@@ -47,9 +45,8 @@ class HtmlContext implements Context
         }
     }
 
-    /********/
     /* THEN */
-    /********/
+
     #[Then('I see :text')]
     public function iSee(string $text): void
     {
@@ -72,14 +69,14 @@ class HtmlContext implements Context
         $content = $this->state->getResponseContent();
         $pos1 = strpos($content, $text1);
         if (false === $pos1) {
-            throw new \DomainException(sprintf('"%s" not found', $text1));
+            throw new \DomainException(\sprintf('"%s" not found', $text1));
         }
         $pos2 = strpos($content, $text2);
         if (false === $pos2) {
-            throw new \DomainException(sprintf('"%s" not found', $text2));
+            throw new \DomainException(\sprintf('"%s" not found', $text2));
         }
         if ($pos1 > $pos2) {
-            throw new \DomainException(sprintf('"%s" found at Position %d, "%s" at %d', $text1, $pos1, $text2, $pos2));
+            throw new \DomainException(\sprintf('"%s" found at Position %d, "%s" at %d', $text1, $pos1, $text2, $pos2));
         }
     }
 
@@ -103,9 +100,7 @@ class HtmlContext implements Context
         }
     }
 
-    /*************/
     /* Internals */
-    /*************/
 
     /** @param array<string,string> $attr */
     protected function mustContainTag(string $tagName, array $attr = [], ?string $content = null): ?\DomainException
@@ -113,7 +108,7 @@ class HtmlContext implements Context
         $crawler = $this->getCrawler();
         $xPath = '//'.$tagName;
         foreach ($attr as $attrName => $attrVal) {
-            $xPath .= sprintf('[@%s=%s]', $attrName, $this->escapeXpathValue($attrVal));
+            $xPath .= \sprintf('[@%s=%s]', $attrName, $this->escapeXpathValue($attrVal));
         }
         $elements = $crawler->filterXPath($xPath);
 
@@ -124,7 +119,7 @@ class HtmlContext implements Context
         // Check content
         if (null !== $content) {
             $content = trim($content);
-            /** @var DOMElement $elem */
+            /** @var \DOMElement $elem */
             foreach ($elements as $elem) {
                 if ($this->strComp->stringEquals(trim($elem->textContent), $content)) {
                     return null;

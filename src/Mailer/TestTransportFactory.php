@@ -20,6 +20,7 @@ class TestTransportFactory extends AbstractTransportFactory
         throw new UnsupportedSchemeException($dsn, 'test', $this->getSupportedSchemes());
     }
 
+    /** @return string[] */
     protected function getSupportedSchemes(): array
     {
         return ['test'];

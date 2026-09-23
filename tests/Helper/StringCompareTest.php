@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Helper;
 
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+#[CoversClass(StringCompare::class)]
 class StringCompareTest extends TestCase
 {
     protected StringCompare $comp;
@@ -14,13 +19,13 @@ class StringCompareTest extends TestCase
         $this->comp = new StringCompare();
     }
 
-    /** @dataProvider stringContainsProvider */
+    #[DataProvider('stringContainsProvider')]
     public function testStringContains(string $haystack, string $needle): void
     {
         $this->assertTrue($this->comp->stringContains($haystack, $needle));
     }
 
-    public function stringContainsProvider()
+    public static function stringContainsProvider(): array
     {
         return [
             ['Hello World', 'Hello'],
@@ -33,32 +38,30 @@ class StringCompareTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider stringContainsNotProvider
-     */
-    public function testStringContainsNot(string $haystack, string $needle)
+    #[DataProvider('stringContainsNotProvider')]
+    public function testStringContainsNot(string $haystack, string $needle): void
     {
         $this->assertFalse($this->comp->stringContains($haystack, $needle));
     }
 
-    public function stringContainsNotProvider()
+    public static function stringContainsNotProvider(): array
     {
         return [
-            ['Hello','World'],
-            ['Hello','hello'],
-            ['Hello','~[0-9]'],
-            ['Hello World','^World$'],
-            ['Hello World','^Hello$'],
+            ['Hello', 'World'],
+            ['Hello', 'hello'],
+            ['Hello', '~[0-9]'],
+            ['Hello World', '^World$'],
+            ['Hello World', '^Hello$'],
         ];
     }
 
-    /** @dataProvider stringEqualsProvider */
+    #[DataProvider('stringEqualsProvider')]
     public function testStringEquals(string $haystack, string $needle): void
     {
         $this->assertTrue($this->comp->stringEquals($haystack, $needle));
     }
 
-    public function stringEqualsProvider()
+    public static function stringEqualsProvider(): array
     {
         return [
             ['Hello World', 'Hello World'],
@@ -71,26 +74,25 @@ class StringCompareTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider stringEqualsNotProvider
-     */
-    public function testStringEqualsNot(string $haystack, string $needle)
+    #[DataProvider('stringEqualsNotProvider')]
+    public function testStringEqualsNot(string $haystack, string $needle): void
     {
         $this->assertFalse($this->comp->stringEquals($haystack, $needle));
     }
 
-    public function stringEqualsNotProvider()
+    /** @return array<string[]> */
+    public static function stringEqualsNotProvider(): array
     {
         return [
             ['Hello World', 'Hello'],
             ['Hello World', 'World'],
-            ['Hello','World'],
-            ['Hello','hello'],
+            ['Hello', 'World'],
+            ['Hello', 'hello'],
             ['Hello', '~ello'],
-            ['Hello','~[0-9]'],
+            ['Hello', '~[0-9]'],
             ['Hello World', '~[a-z]+'],
-            ['Hello World','^World$'],
-            ['Hello World','^Hello$'],
+            ['Hello World', '^World$'],
+            ['Hello World', '^Hello$'],
             ['Hello World', '~World$'],
         ];
     }

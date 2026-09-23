@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Elbformat\SymfonyBehatBundle\Tests\fixtures\Context;
 
 use Behat\Gherkin\Node\PyStringNode;
-use Behat\Gherkin\Node\TableNode;
 use Elbformat\SymfonyBehatBundle\Context\AbstractApiContext;
-use Elbformat\SymfonyBehatBundle\Context\AbstractDatabaseContext;
-use Elbformat\SymfonyBehatBundle\Tests\fixtures\Entity\OneOfEverything;
 
 class MyApiContext extends AbstractApiContext
 {

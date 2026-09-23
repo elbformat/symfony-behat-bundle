@@ -8,10 +8,10 @@ class LogEntry
 {
     protected string $message;
 
-    /** @var array  */
+    /** @var mixed[] */
     protected array $context;
 
-    /** @param array $context */
+    /** @param mixed[] $context */
     public function __construct(string $message, array $context)
     {
         $this->message = $message;
@@ -23,7 +23,7 @@ class LogEntry
         return $this->message;
     }
 
-    /** @return array */
+    /** @return mixed[] */
     public function getContext(): array
     {
         return $this->context;
