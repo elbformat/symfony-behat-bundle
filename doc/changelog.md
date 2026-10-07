@@ -8,6 +8,9 @@
 ## v1.5.12
 * Feature: Symfony 7.3 compatibility 
 
+## v1.5.12
+* Fix: Wrong runtime, when date was mocked
+
 ## v1.5.11
 * Fix: Escaping of quotes in xpath expressions.
 

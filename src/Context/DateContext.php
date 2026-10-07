@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Elbformat\SymfonyBehatBundle\Context;
 
 use Behat\Behat\Context\Context;
-use Behat\Hook\BeforeScenario;
+use Behat\Hook\AfterScenario;
 use Behat\Step\Given;
 use SlopeIt\ClockMock\ClockMock;
 
@@ -17,7 +17,7 @@ use SlopeIt\ClockMock\ClockMock;
  */
 class DateContext implements Context
 {
-    #[BeforeScenario]
+    #[AfterScenario]
     public function reset(): void
     {
         ClockMock::reset();
