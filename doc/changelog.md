@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.5.14
+* Fix: Wrong runtime, when date was mocked
+
 ## v1.5.13
 * Feature: Symfony 7.4 & 8.1 compatibility
 * Change: Moved from circleci to github-actions
@@ -7,9 +10,6 @@
 
 ## v1.5.12
 * Feature: Symfony 7.3 compatibility 
-
-## v1.5.12
-* Fix: Wrong runtime, when date was mocked
 
 ## v1.5.11
 * Fix: Escaping of quotes in xpath expressions.
