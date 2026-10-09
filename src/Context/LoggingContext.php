@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Elbformat\SymfonyBehatBundle\Context;
 
 use Behat\Behat\Context\Context;
+use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 use Behat\Hook\AfterScenario;
 use Behat\Hook\BeforeScenario;
@@ -20,6 +21,8 @@ use Elbformat\SymfonyBehatBundle\Logger\TestLogger;
  */
 class LoggingContext implements Context
 {
+    use TableOrStringTrait;
+
     #[BeforeScenario]
     public function reset(): void
     {
@@ -40,17 +43,16 @@ class LoggingContext implements Context
     }
 
     #[Then('the log contains a(n) :level entry :text')]
-    public function theLogContainsAnEntry(string $level, string $text, ?TableNode $table = null, bool $dumpLogs = true): void
+    public function theLogContainsAnEntry(string $level, string $text, ?TableNode $table = null, bool $dumpLogs = true, ?PyStringNode $pyStringNode = null): void
     {
         $logs = TestLogger::getLogs($level);
-        $tableRows = null !== $table ? $table->getRowsHash() : [];
+        $tableRows = $this->getDataFromTableOrString($table, $pyStringNode);
         foreach ($logs as $logEntry) {
             if ($logEntry->getMessage() !== $text) {
                 continue;
             }
             // Check context
             $context = $logEntry->getContext();
-            /** @var string $val */
             foreach ($tableRows as $key => $val) {
                 $foundVal = $context[$key] ?? null;
 
@@ -60,7 +62,7 @@ class LoggingContext implements Context
                 }
 
                 // Regex compare
-                if (str_starts_with($val, '~') && preg_match('/'.preg_quote(substr($val, -1), '/').'/', (string) $foundVal)) {
+                if (\is_string($val) && str_starts_with($val, '~') && preg_match('/'.preg_quote(substr($val, -1), '/').'/', (string) $foundVal)) {
                     break;
                 }
 
@@ -71,8 +73,15 @@ class LoggingContext implements Context
 
                 // Array/Json compare
                 if (\is_array($foundVal)) {
-                    /** @var array $valArr */
-                    $valArr = json_decode($val, true, 512, \JSON_THROW_ON_ERROR);
+                    // Deprecated. Use PropertyAccess or JSON/YAML instead
+                    if (\is_string($val)) {
+                        /** @var array $valArr */
+                        $valArr = json_decode($val, true, 512, \JSON_THROW_ON_ERROR);
+                    } elseif (\is_array($val)) {
+                        $valArr = $val;
+                    } else {
+                        throw new \InvalidArgumentException('Expected json string or array to compare to another array');
+                    }
 
                     $dc = new ArrayDeepCompare();
                     if ($dc->arrayEquals($foundVal, $valArr)) {

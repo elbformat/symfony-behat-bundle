@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Elbformat\SymfonyBehatBundle\Tests\Context;
 
+use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Connection;
@@ -100,7 +101,7 @@ class AbstractDatabaseContextTest extends TestCase
         $this->context->resetSeq();
     }
 
-    public function testCreateObject(): void
+    public function testCreateObjectTable(): void
     {
         $table = new TableNode([
             ['int', '7'],
@@ -136,6 +137,109 @@ class AbstractDatabaseContextTest extends TestCase
             return true;
         }));
         $this->context->createMyObject($table);
+    }
+
+    public function testCreateObjectTableTypeCast(): void
+    {
+        $table = new TableNode([
+            ['int', '(int) 7'],
+            ['string', '(string) ab\nc'],
+            ['float', '(float) 1.2'],
+            ['dt', 'NULL'],
+            ['bool', 'TRUE'],
+        ]);
+        $this->em->expects($this->once())->method('persist')->with($this->callback(function ($obj) {
+            $this->assertInstanceOf(OneOfEverything::class, $obj);
+            $this->assertSame(7, $obj->getInt());
+            $this->assertSame('ab\nc', $obj->getString());
+            $this->assertSame(1.2, $obj->getFloat());
+            $this->assertNull($obj->getDt());
+            $this->assertTrue($obj->isBool());
+
+            return true;
+        }));
+        $this->context->createMyObject($table);
+    }
+
+    public function testCreateObjectJson(): void
+    {
+        $json = <<<EOJSON
+            {
+              "int": 7,
+              "string": "abc",
+              "float": 1.2,
+              "dt": "2021-01-02",
+              "dti": "2020-02-03",
+              "dtif": "2019-03-04",
+              "bool": true,
+              "enum": "case2",
+              "backedEnum": "case2",
+              "self": "OneOfEverything::66",
+            }
+        EOJSON;
+        $pyString = new PyStringNode(explode("\n", $json), 1);
+        $repoMock = $this->createMock(EntityRepository::class);
+        $repoMock->expects($this->once())->method('find')->with(66)->willReturn(new OneOfEverything());
+        $this->em->expects($this->once())
+            ->method('getRepository')
+            ->with(OneOfEverything::class)
+            ->willReturn($repoMock);
+        $this->em->expects($this->once())->method('persist')->with($this->callback(function ($obj) {
+            $this->assertInstanceOf(OneOfEverything::class, $obj);
+            $this->assertSame(7, $obj->getInt());
+            $this->assertSame('abc', $obj->getString());
+            $this->assertSame(1.2, $obj->getFloat());
+            $this->assertSame('2021-01-02', $obj->getDt()->format('Y-m-d'));
+            $this->assertSame('2020-02-03', $obj->getDti()->format('Y-m-d'));
+            $this->assertSame('2019-03-04', $obj->getDtif()->format('Y-m-d'));
+            $this->assertTrue($obj->isBool());
+            $this->assertSame(MyEnum::case2, $obj->getEnum());
+            $this->assertSame(MyBackedEnum::case2, $obj->getBackedEnum());
+            $this->assertInstanceOf(OneOfEverything::class, $obj->getSelf());
+
+            return true;
+        }));
+        $this->context->createMyObject(null, $pyString);
+    }
+
+    public function testCreateObjectYaml(): void
+    {
+        $json = <<<EOYAML
+            int: 7 
+            string: "abc"
+            float: 1.2
+            dt: "2021-01-02"
+            dti: "2020-02-03"
+            dtif: "2019-03-04"
+            bool: true
+            enum: "case2"
+            backedEnum: "case2"
+            self: "OneOfEverything::66"
+        EOYAML;
+
+        $pyString = new PyStringNode(explode("\n", $json), 1);
+        $repoMock = $this->createMock(EntityRepository::class);
+        $repoMock->expects($this->once())->method('find')->with(66)->willReturn(new OneOfEverything());
+        $this->em->expects($this->once())
+            ->method('getRepository')
+            ->with(OneOfEverything::class)
+            ->willReturn($repoMock);
+        $this->em->expects($this->once())->method('persist')->with($this->callback(function ($obj) {
+            $this->assertInstanceOf(OneOfEverything::class, $obj);
+            $this->assertSame(7, $obj->getInt());
+            $this->assertSame('abc', $obj->getString());
+            $this->assertSame(1.2, $obj->getFloat());
+            $this->assertSame('2021-01-02', $obj->getDt()->format('Y-m-d'));
+            $this->assertSame('2020-02-03', $obj->getDti()->format('Y-m-d'));
+            $this->assertSame('2019-03-04', $obj->getDtif()->format('Y-m-d'));
+            $this->assertTrue($obj->isBool());
+            $this->assertSame(MyEnum::case2, $obj->getEnum());
+            $this->assertSame(MyBackedEnum::case2, $obj->getBackedEnum());
+            $this->assertInstanceOf(OneOfEverything::class, $obj->getSelf());
+
+            return true;
+        }));
+        $this->context->createMyObject(null, $pyString);
     }
 
     #[DataProvider('createObjectBoolProvider')]
@@ -254,6 +358,41 @@ class AbstractDatabaseContextTest extends TestCase
         $this->context->assertMyObject($table);
     }
 
+    public function testAssertObjectJson(): void
+    {
+        $repoMock = $this->createMock(EntityRepository::class);
+        $repoMock->expects($this->once())->method('findOneBy')->with([
+            'int' => 7,
+            'string' => 'abc',
+            'float' => 1.2,
+            'dt' => new \DateTime('2021-01-02'),
+            'dti' => new \DateTime('2020-02-03'),
+            'dtif' => new \DateTime('2019-03-04'),
+            'bool' => true,
+            'enum' => 'case2',
+            'backedEnum' => 'case1',
+            'self' => 66,
+        ])->willReturn(new OneOfEverything());
+        $this->em->expects($this->once())->method('getRepository')->willReturn($repoMock);
+        $json = <<<EOJSON
+            {
+              "int": 7,
+              "string": "abc",
+              "float": 1.2,
+              "dt": "2021-01-02",
+              "dti": "2020-02-03",
+              "dtif": "2019-03-04",
+              "bool": true,
+              "enum": "case2",
+              "backedEnum": "case1",
+              "self": 66,
+            }
+        EOJSON;
+        $pyString = new PyStringNode(explode("\n", $json), 1);
+
+        $this->context->assertMyObject(null, $pyString);
+    }
+
     public function testAssertObjectStringable(): void
     {
         $repoMock = $this->createMock(EntityRepository::class);
@@ -311,7 +450,7 @@ class AbstractDatabaseContextTest extends TestCase
         $this->expectExceptionMessage('Not found. Found:');
         $this->expectedExceptionTableEntry('Field', 'Expected', 'Found');
         $this->expectedExceptionTableEntry('int', '7', '8');
-        $this->expectedExceptionTableEntry('string', 'NULL', 'def');
+        $this->expectedExceptionTableEntry('string', 'null', 'def');
         $this->expectedExceptionTableEntry('float', '1.2', '2.3');
         $this->expectedExceptionTableEntry('dt', '2021-01-02', '2022-01-02T00:00:00+00:00');
         $this->expectedExceptionTableEntry('dti', '2020-02-03', '<NULL>');

@@ -1,7 +1,28 @@
 # Changelog
 
-## v1.5.14
+## v1.6.0
 * Fix: Wrong runtime, when date was mocked
+* Feature: PropertyAccess Syntax in tables like `[array][0]` or `values.first`
+* Feature: Native support for `NULL`, `FALSE` and `TRUE` in tables
+* Feature: Type casts in tables with `(int) 1` or `(float) 1.0`
+* Feature: Allow using JSON or YAML instead of tables.
+* Deprecation: Please do not use json for array data anymore. Use the PropertyAccess syntax or JSON/YAML instead.
+
+### Improved table and string handling
+Whenever you used a table in your Context you can now use json/yaml as equivalent.
+This is achieved by a trait (TableOrStringTrait) which by itself uses TableTrait and PyStringTrait.
+As common data structure it introduces a new Type "NestedMap" which can be asserted with the NestedMapTrait.
+As tables are not that feature-rich compared to json/yaml it got some improvements/conventions on keys and values:
+* Keys are always parsed by symfony/property-access component to allow building deep map/list structures.
+* Values have some common replacements and options for casting:
+* * NULL -> `null`
+* * FALSE -> `false`
+* * TRUE -> `true`
+* * (int) 1 -> `1`
+* * (float) 1.0 -> `1.0`
+* * (string) NULL -> `'NULL'`
+* * \n -> line break
+With that toolset you should not use JSON Syntax in tables anymore
 
 ## v1.5.13
 * Feature: Symfony 7.4 & 8.1 compatibility

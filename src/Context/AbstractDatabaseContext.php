@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Elbformat\SymfonyBehatBundle\Context;
 
 use Behat\Behat\Context\Context;
+use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Driver\PDO\PgSQL\Driver as PgSqlDriver;
@@ -15,12 +16,14 @@ use Doctrine\Persistence\ObjectRepository;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
- * @author Hannes Giesenow <hannes.giesenow@elbformat.de>
- *
  * @template T of object
+ *
+ * @phpstan-import-type NestedMap from NestedMapTrait
  */
 abstract class AbstractDatabaseContext implements Context
 {
+    use TableOrStringTrait;
+
     protected EntityManagerInterface $em;
 
     public function __construct(EntityManagerInterface $em)
@@ -60,14 +63,28 @@ abstract class AbstractDatabaseContext implements Context
         }
     }
 
-    protected function createObject(TableNode $table): void
+    /**
+     * @return T
+     */
+    protected function createObject(?TableNode $tableNode = null, ?PyStringNode $pyStringNode = null): object
     {
-        /** @var array<string,string> $tableData */
-        $tableData = $table->getRowsHash();
-        $constructorArgs = $this->getConstructorArgsFromData($tableData);
+        $data = $this->getDataFromTableOrString($tableNode, $pyStringNode);
+        $data = array_merge($this->getDefaults(), $data);
+
+        return $this->createObjectFromData($data);
+    }
+
+    /**
+     * @param NestedMap $data
+     *
+     * @return T
+     */
+    protected function createObjectFromData(array $data): object
+    {
+        $constructorArgs = $this->getConstructorArgsFromData($data);
         $obj = $this->newObject($constructorArgs);
         $pa = new PropertyAccessor();
-        foreach ($tableData as $key => $val) {
+        foreach ($data as $key => $val) {
             // Skip, when entry was already consumed in constructor
             if (\array_key_exists($key, $constructorArgs)) {
                 continue;
@@ -80,6 +97,8 @@ abstract class AbstractDatabaseContext implements Context
         $this->em->persist($obj);
         $this->em->flush();
         $this->em->clear();
+
+        return $obj;
     }
 
     /** @param class-string $class2 */
@@ -111,12 +130,13 @@ abstract class AbstractDatabaseContext implements Context
         $this->em->clear();
     }
 
-    /** @return T */
-    protected function assertObject(TableNode $table, bool $printAlternatives = true): object
+    /**
+     * @return T
+     */
+    protected function assertObject(?TableNode $table = null, ?PyStringNode $pyStringNode = null, bool $printAlternatives = true): object
     {
         $repo = $this->getRepo();
-        /** @var array<string,string> $tableData */
-        $tableData = $table->getRowsHash();
+        $tableData = $this->getDataFromTableOrString($table, $pyStringNode);
 
         // Convert types
         $data = [];
@@ -140,10 +160,10 @@ abstract class AbstractDatabaseContext implements Context
         throw new \DomainException($exceptionMessage);
     }
 
-    protected function assertNoObject(TableNode $table): void
+    protected function assertNoObject(?TableNode $table = null, ?PyStringNode $pyStringNode = null): void
     {
         try {
-            $this->assertObject($table, false);
+            $this->assertObject($table, $pyStringNode, false);
         } catch (\DomainException) {
             return;
         }
@@ -190,16 +210,16 @@ abstract class AbstractDatabaseContext implements Context
         $this->em->getConnection()->executeQuery($query);
     }
 
-    protected function mapTableValue(string $key, string $value): mixed
+    protected function mapTableValue(string $key, mixed $value): mixed
     {
         $type = $this->getTypeOfProperty($key);
 
         /* @psalm-suppress ArgumentTypeCoercion */
         switch (true) {
-            case null !== $type && enum_exists($type):
+            case null !== $type && enum_exists($type) && \is_string($value):
                 return \constant($type.'::'.$value);
                 // Reference to another entity with <Entity>::<ID>
-            case preg_match('/^(.+)::(.+)$/', $value, $match):
+            case \is_string($value) && preg_match('/^(.+)::(.+)$/', $value, $match):
                 $className = preg_replace('/[^\\\]+$/', $match[1], $this->getClassName());
                 if (!class_exists($className)) {
                     throw new \DomainException('Invalid entity name: '.$className);
@@ -208,13 +228,13 @@ abstract class AbstractDatabaseContext implements Context
                 return $this->em->getRepository($className)->find($match[2]);
             case 'DateTimeInterface' === $type:
             case 'DateTimeImmutable' === $type:
-                return new \DateTimeImmutable($value);
+                return \is_string($value) ? new \DateTimeImmutable($value) : $value;
             case 'DateTime' === $type:
-                return new \DateTime($value);
+                return \is_string($value) ? new \DateTime($value) : $value;
             case 'int' === $type:
-                return (int) $value;
+                return \is_scalar($value) ? (int) $value : $value;
             case 'float' === $type:
-                return (float) $value;
+                return \is_scalar($value) ? (float) $value : $value;
             case 'bool' === $type:
                 if ('true' === $value) {
                     return true;
@@ -225,29 +245,32 @@ abstract class AbstractDatabaseContext implements Context
 
                 return (bool) $value;
             case 'array' === $type:
-                return json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
+                if (\is_string($value)) {
+                    // @deprecated: use PropertyAccess instead
+                    return json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
+                }
+
+                return $type;
             default:
                 return $value;
         }
     }
 
     /** @return string|bool|\DateTimeInterface|null */
-    protected function convertAssertionValue(string $value, ?string $type): mixed
+    protected function convertAssertionValue(mixed $value, ?string $type): mixed
     {
-        if ('NULL' === $value) {
-            return null;
-        }
-
         return match ($type) {
-            'array' => json_decode($value, false, 512, \JSON_THROW_ON_ERROR),
-            'bool' => 'false' !== $value && '0' !== $value,
-            'DateTimeInterface', 'DateTime' => new \DateTime($value),
-            'DateTimeImmutable' => new \DateTimeImmutable($value),
+            // @deprecated use PropertyAccess Syntax instead
+            'array' => \is_string($value) ? json_decode($value, false, 512, \JSON_THROW_ON_ERROR) : $value,
+            // @deprecated use TRUE and FALSE instead
+            'bool' => \is_bool($value) ? $value : ('false' !== $value && '0' !== $value),
+            'DateTimeInterface', 'DateTime' => \is_string($value) ? new \DateTime($value) : $value,
+            'DateTimeImmutable' => \is_string($value) ? new \DateTimeImmutable($value) : $value,
             default => $value,
         };
     }
 
-    /** @param array<string,string> $data */
+    /** @param NestedMap $data */
     protected function printAlternatives(array $data): string
     {
         $pa = new PropertyAccessor();
@@ -298,7 +321,7 @@ abstract class AbstractDatabaseContext implements Context
                 if (!\is_scalar($realVal)) {
                     $realVal = '<'.\gettype($realVal).'>';
                 }
-                $return .= \sprintf("| %-20s | %20s | %20s |\n", $key, $val, (string) $realVal);
+                $return .= \sprintf("| %-20s | %20s | %20s |\n", $key, \is_scalar($val) ? $val : json_encode($val), (string) $realVal);
             }
         }
 
@@ -346,9 +369,9 @@ abstract class AbstractDatabaseContext implements Context
     }
 
     /**
-     * @param array<string,string> $data
+     * @param NestedMap $data
      *
-     * @return array<string,mixed>
+     * @return array<array-key,mixed>
      */
     protected function getConstructorArgsFromData(array $data): array
     {
@@ -371,6 +394,12 @@ abstract class AbstractDatabaseContext implements Context
     protected function getDefaultValue(string $var): string
     {
         return '';
+    }
+
+    /** @return NestedMap */
+    protected function getDefaults(): array
+    {
+        return [];
     }
 
     /** @return class-string<T> */
