@@ -1,7 +1,44 @@
 # Changelog
 
-## v1.5.14
-* Fix: Wrong runtime, when date was mocked
+## v1.6.0
+
+### Fixes
+* DateContext: Wrong runtime, when date was mocked
+
+### Improvements
+* AbstractDatabaseContext: Allow string identifiers for `AbstractDatabaseContext::createRelation() and assertCollectionContains()`
+* AbstractDatabaseContext: Allow resolving entities by FQN (`App\\DifferentFolder\\MyEntity::1`)
+* AbstractDatabaseContext: Allow Entity syntax (`MyEntity::1`) also in assertions instead of plain IDs
+* LoggingContext: Allow regex comparison in text and scalar context 
+
+### Features
+* AbstractDatabaseContext: PropertyAccess Syntax in tables like `[array][0]` or `values.first`
+* AbstractDatabaseContext: Native support for `NULL`, `FALSE` and `TRUE` in tables
+* AbstractDatabaseContext: Type casts in tables with `(int) 1` or `(float) 1.0`
+* AbstractDatabaseContext: Allow using JSON or YAML instead of tables.
+* DateContext: Added "When I wait :n second(s)" to DateContext. Use with care!
+* LoggingContext: "the log does not contain any :level entries"
+* LoggingContext: Allow different log handlers ("the xxx log contains...")
+* MailerContext: `Then the e-mail has a (blind) carbon copy recipient :cc`
+
+### Deprecations
+* AbstractDatabaseContext: Please do not use json for array data anymore. Use the PropertyAccess syntax or JSON/YAML instead.
+
+### Improved table and string handling
+Whenever you used a table in your Context you can now use json/yaml as equivalent.
+This is achieved by a trait (TableOrStringTrait) which by itself uses TableTrait and PyStringTrait.
+As common data structure it introduces a new Type "NestedMap" which can be asserted with the NestedMapTrait.
+As tables are not that feature-rich compared to json/yaml it got some improvements/conventions on keys and values:
+* Keys are always parsed by symfony/property-access component to allow building deep map/list structures.
+* Values have some common replacements and options for casting:
+* * NULL -> `null`
+* * FALSE -> `false`
+* * TRUE -> `true`
+* * (int) 1 -> `1`
+* * (float) 1.0 -> `1.0`
+* * (string) NULL -> `'NULL'`
+* * \n -> line break
+With that toolset you should not use JSON Syntax in tables anymore
 
 ## v1.5.13
 * Feature: Symfony 7.4 & 8.1 compatibility

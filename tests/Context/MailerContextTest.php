@@ -171,6 +171,40 @@ class MailerContextTest extends TestCase
         $this->mailerContext->theEMailIsAlsoBeingSentTo('secondrecipient@format-h.com');
     }
 
+    public function testTheEMailHasACarbonCopyRecipient(): void
+    {
+        $this->send(cc: ['recipient@format-h.com', 'secondrecipient@format-h.com']);
+        $this->mailerContext->anEmailIsBeingSentToWithSubject('recipient@format-h.com', 'Lorem Ipsum');
+        $this->mailerContext->theEMailHasACarbonCopyRecipient('secondrecipient@format-h.com');
+        $this->expectNotToPerformAssertions();
+    }
+
+    public function testTheEMailHasACarbonCopyRecipientFail(): void
+    {
+        $this->send(cc: ['anotherrecipient@format-h.com']);
+        $this->mailerContext->anEmailIsBeingSentToWithSubject('recipient@format-h.com', 'Lorem Ipsum');
+        $this->expectExceptionMessage('Found: ');
+        $this->expectExceptionMessage('anotherrecipient@format-h.com');
+        $this->mailerContext->theEMailHasACarbonCopyRecipient('secondrecipient@format-h.com');
+    }
+
+    public function testTheEMailHasABlindCarbonCopyRecipient(): void
+    {
+        $this->send(bcc: ['recipient@format-h.com', 'secondrecipient@format-h.com']);
+        $this->mailerContext->anEmailIsBeingSentToWithSubject('recipient@format-h.com', 'Lorem Ipsum');
+        $this->mailerContext->theEMailHasABlindCarbonCopyRecipient('secondrecipient@format-h.com');
+        $this->expectNotToPerformAssertions();
+    }
+
+    public function testTheEMailHasABlindCarbonCopyRecipientFail(): void
+    {
+        $this->send(bcc: ['anotherrecipient@format-h.com']);
+        $this->mailerContext->anEmailIsBeingSentToWithSubject('recipient@format-h.com', 'Lorem Ipsum');
+        $this->expectExceptionMessage('Found: ');
+        $this->expectExceptionMessage('anotherrecipient@format-h.com');
+        $this->mailerContext->theEMailHasABlindCarbonCopyRecipient('secondrecipient@format-h.com');
+    }
+
     public function testTheEMailIsBeingSentFrom(): void
     {
         $this->send();
@@ -215,6 +249,8 @@ class MailerContextTest extends TestCase
     protected function send(
         string $from = 'sender@format-h.com',
         string|array $to = 'recipient@format-h.com',
+        array $cc = [],
+        array $bcc = [],
         string $subject = 'Lorem Ipsum',
         ?string $html = 'Lorem Ipsum',
         ?string $plainText = null,
@@ -230,6 +266,13 @@ class MailerContextTest extends TestCase
         $message->html($html);
         $message->text($plainText);
         $message->from(new Address($from));
+        foreach ($cc as $ccEntry) {
+            $message->addCc($ccEntry);
+        }
+        foreach ($bcc as $bccEntry) {
+            $message->addBcc($bccEntry);
+        }
+
         $message->sender(new Address($from));
         foreach ($to as $t) {
             $message->addTo($t);

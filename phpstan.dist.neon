@@ -5,4 +5,5 @@ parameters:
         #- tests/
     treatPhpDocTypesAsCertain: false
 includes:
+    - vendor/phpstan/phpstan-doctrine/extension.neon
     - phpstan-baseline.neon

@@ -7,6 +7,7 @@ namespace Elbformat\SymfonyBehatBundle\Context;
 use Behat\Behat\Context\Context;
 use Behat\Hook\AfterScenario;
 use Behat\Step\Given;
+use Behat\Step\When;
 use SlopeIt\ClockMock\ClockMock;
 
 /**
@@ -27,5 +28,17 @@ class DateContext implements Context
     public function theCurrentDateIs(string $date): void
     {
         ClockMock::freeze(new \DateTime($date));
+    }
+
+    #[When('I wait :n second(s)')]
+    public function iWaitNSeconds(int $n): void
+    {
+        sleep($n);
+    }
+
+    #[When('I wait :n millisecond(s)')]
+    public function iWaitNMilliseconds(int $n): void
+    {
+        usleep($n * 1000);
     }
 }
