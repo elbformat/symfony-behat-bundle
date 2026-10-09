@@ -2,6 +2,32 @@
 This context has no steps by itself, but helper to create an own context by extending it.
 For example if you want to create users and assign them to groups this could look like.
 
+UserContext.php
+```
+/** @extends AbstractDatabaseContext<User::class>
+class UserContext extends AbstractDatabaseContext
+{
+    #[BeforeScenario]
+    public function reset(): void
+    {
+        $this->resetDatabase();
+        $this->resetSequence();
+    }
+
+    #[Given('there is a user')]
+    public function thereIsAUser(?TableNode $table = null, ?PyStringNode $pyString = null): void
+    {
+        $this->createObject($table, $pyString);
+    }
+    
+    protected function getDefaults(): array
+    {
+        return [
+            'firstname' => 'test',
+        ];
+    }
+}
+```
 ## Given
 ### `Given there is a user`
 ```

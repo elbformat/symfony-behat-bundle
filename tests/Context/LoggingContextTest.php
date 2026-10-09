@@ -8,6 +8,7 @@ use Behat\Gherkin\Node\TableNode;
 use Elbformat\SymfonyBehatBundle\Context\LoggingContext;
 use Elbformat\SymfonyBehatBundle\Logger\TestLogger;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(LoggingContext::class)]
@@ -42,17 +43,21 @@ class LoggingContextTest extends TestCase
         $this->expectNotToPerformAssertions();
     }
 
-    public function testTheLogContainsAnEntryContextArray(): void
+    #[DataProvider('provideTableArray')]
+    public function testTheLogContainsAnEntryContextArray(string $key, string $val): void
     {
         $logger = new TestLogger();
         $logger->log('warn', 'This is a warning', ['lorem' => ['dolor' => 'sit']]);
-        $this->loggingContext->theLogContainsAnEntry('warn', 'This is a warning', new TableNode([
-            [
-                'lorem',
-                '{"dolor":"sit"}',
-            ],
-        ]), false);
+        $this->loggingContext->theLogContainsAnEntry('warn', 'This is a warning', new TableNode([[$key, $val]]), false);
         $this->expectNotToPerformAssertions();
+    }
+
+    public static function provideTableArray(): iterable
+    {
+        yield ['lorem.dolor', 'sit'];
+        yield ['[lorem][dolor]', 'sit'];
+        // @deprecated
+        yield ['lorem', '{"dolor":"sit"}'];
     }
 
     public function testTheLogContainsAnEntryFailNoEntry(): void
