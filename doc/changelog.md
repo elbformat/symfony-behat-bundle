@@ -1,7 +1,8 @@
 # Changelog
 
 ## v1.6.1
-* MailerContext: Fixed the e-mail is being sent from to use "from" instead of "sender" 
+* Fix: MailerContext: Fixed the e-mail is being sent from to use "from" instead of "sender". 
+* Fix: Browser/State: Empty cookies are now being deleted.
 
 ## v1.6.0
 

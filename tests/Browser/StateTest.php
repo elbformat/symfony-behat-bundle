@@ -32,6 +32,15 @@ class StateTest extends TestCase
         $this->assertEquals('world', $cookies['hello']);
     }
 
+    public function testResetCookie(): void
+    {
+        $state = new State();
+        $state->update(Request::create('/'), new Response('', 200, ['set-cookie' => ['hello=world']]));
+        $state->update(Request::create('/'), new Response('', 200, ['set-cookie' => ['hello=']]));
+        $cookies = $state->getCookies();
+        $this->assertCount(0, $cookies);
+    }
+
     public function testGetResponseNotSet(): void
     {
         $state = new State();
