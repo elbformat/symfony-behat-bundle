@@ -10,6 +10,7 @@
 * AbstractDatabaseContext: Allow resolving entities by FQN (`App\\DifferentFolder\\MyEntity::1`)
 * AbstractDatabaseContext: Allow Entity syntax (`MyEntity::1`) also in assertions instead of plain IDs
 * LoggingContext: Allow regex comparison in text and scalar context 
+* Added support for doctrine/orm 3.x
 
 ### Features
 * AbstractDatabaseContext: PropertyAccess Syntax in tables like `[array][0]` or `values.first`
