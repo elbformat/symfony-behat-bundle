@@ -17,7 +17,7 @@ jobs:
         symfony_version: [ '5.4', '6.4', '7.4']
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Pin symfony version
         run: composer config extra.symfony.require "^${{matrix.symfony_version}}"
       - name: Run check

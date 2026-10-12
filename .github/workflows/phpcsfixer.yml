@@ -10,6 +10,6 @@ jobs:
     container:
       image: ghcr.io/php-cs-fixer/php-cs-fixer:3.95-php8.3
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run check
         run: php-cs-fixer check --diff --format txt

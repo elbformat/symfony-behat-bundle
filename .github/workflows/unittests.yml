@@ -19,7 +19,7 @@ jobs:
           - php_version: '8.3'
             symfony_version: '8.1'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: composer config extra.symfony.require "^${{matrix.symfony_version}}"
       - run: composer install
       - run: vendor/bin/phpunit --coverage-cobertura=build/cobertura.xml

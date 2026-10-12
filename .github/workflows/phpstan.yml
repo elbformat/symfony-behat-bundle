@@ -18,7 +18,7 @@ jobs:
             symfony_version: '8.1'
       fail-fast: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Pin symfony version
         run: composer config extra.symfony.require "^${{matrix.symfony_version}}"
       - name: Composer install
