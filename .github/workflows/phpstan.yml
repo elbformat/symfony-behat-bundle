@@ -13,6 +13,7 @@ jobs:
       matrix:
         php_version: ['8.3','8.4','8.5']
         symfony_version: [ '5.4', '6.4', '7.4']
+        orm_version: [ '2.0', '3.0' ]
         exclude:
           - php_version: '8.3'
             symfony_version: '8.1'
@@ -21,6 +22,8 @@ jobs:
       - uses: actions/checkout@v7
       - name: Pin symfony version
         run: composer config extra.symfony.require "^${{matrix.symfony_version}}"
+      - name: Pin orm version
+        run: composer require --dev doctrine/orm:"^${{matrix.orm_version}}"
       - name: Composer install
         run: composer install
       - name: Run code analysis
