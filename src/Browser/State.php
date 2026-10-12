@@ -33,7 +33,13 @@ class State
         $this->response = $response;
         $this->crawler = null;
         foreach ($response->headers->getCookies() as $cookie) {
-            $this->cookies[$cookie->getName()] = $cookie->getValue();
+            $value = $cookie->getValue() ?? '';
+            // Empty cookies are being deleted. Usually they are expired
+            if ('' !== $value) {
+                $this->cookies[$cookie->getName()] = $value;
+            } else {
+                unset($this->cookies[$cookie->getName()]);
+            }
         }
     }
 
