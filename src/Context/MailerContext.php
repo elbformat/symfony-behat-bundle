@@ -12,6 +12,7 @@ use Behat\Step\Then;
 use Elbformat\SymfonyBehatBundle\Helper\StringCompare;
 use Elbformat\SymfonyBehatBundle\Mailer\TestTransport;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Mime\Part\DataPart;
 
@@ -103,15 +104,19 @@ class MailerContext implements Context
     #[Then('the e-mail is also being sent to :to')]
     public function theEMailIsAlsoBeingSentTo(string $to): void
     {
-        $recipients = $this->getLastMail()->getTo();
-        $tos = [];
-        foreach ($recipients as $recipient) {
-            if ($to === $recipient->getAddress()) {
-                return;
-            }
-            $tos[] = $recipient->getAddress();
-        }
-        throw new \DomainException('Found recipients: '.implode(',', $tos));
+        $this->assertRecipient($this->getLastMail()->getTo(), $to);
+    }
+
+    #[Then('the e-mail has a carbon copy recipient :cc')]
+    public function theEMailHasACarbonCopyRecipient(string $cc): void
+    {
+        $this->assertRecipient($this->getLastMail()->getCc(), $cc);
+    }
+
+    #[Then('the e-mail has a blind carbon copy recipient :bcc')]
+    public function theEMailHasABlindCarbonCopyRecipient(string $bcc): void
+    {
+        $this->assertRecipient($this->getLastMail()->getBcc(), $bcc);
     }
 
     #[Then('the e-mail is being sent from :from')]
@@ -185,5 +190,23 @@ class MailerContext implements Context
         }
 
         return $this->lastMail;
+    }
+
+    /**
+     * @param Address[] $addresses
+     *
+     * @throws \DomainException
+     */
+    public function assertRecipient(array $addresses, string $expected): void
+    {
+        $recipients = [];
+        foreach ($addresses as $realAddress) {
+            if ($realAddress->getAddress() === $expected) {
+                return;
+            }
+            $recipients[] = $realAddress->getAddress();
+        }
+
+        throw new \DomainException('Found: '.implode(', ', $recipients));
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Elbformat\SymfonyBehatBundle\Tests\fixtures\Context;
 
+use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 use Elbformat\SymfonyBehatBundle\Context\AbstractDatabaseContext;
 use Elbformat\SymfonyBehatBundle\Tests\fixtures\Entity\OneOfEverything;
@@ -25,9 +26,9 @@ class MyDatabaseContext extends AbstractDatabaseContext
         $this->resetSequence();
     }
 
-    public function createMyObject(TableNode $table): void
+    public function createMyObject(?TableNode $table = null, ?PyStringNode $pyStringNode = null): void
     {
-        $this->createObject($table);
+        $this->createObject($table, $pyStringNode);
     }
 
     public function createMyRelation(int $id1, string $class2, int $id2, string $relationName): void
@@ -35,14 +36,14 @@ class MyDatabaseContext extends AbstractDatabaseContext
         $this->createRelation($id1, $class2, $id2, $relationName);
     }
 
-    public function assertMyObject(TableNode $table): void
+    public function assertMyObject(?TableNode $table = null, ?PyStringNode $pyStringNode = null): void
     {
-        $this->assertObject($table);
+        $this->assertObject($table, $pyStringNode);
     }
 
-    public function assertNotMyObject(TableNode $table): void
+    public function assertNotMyObject(?TableNode $table = null, ?PyStringNode $pyStringNode = null): void
     {
-        $this->assertNoObject($table);
+        $this->assertNoObject($table, $pyStringNode);
     }
 
     public function assertMyCollectionContains(int $id1, string $class2, int $id2, string $relationName): void

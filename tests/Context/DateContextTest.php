@@ -20,4 +20,22 @@ class DateContextTest extends TestCase
         $ctx->reset();
         $this->assertSame($dateBefore, date('Y-m-d'));
     }
+
+    public function testWaitSeconds(): void
+    {
+        $ctx = new DateContext();
+        $expectedDate = (new \DateTimeImmutable())->add(new \DateInterval('PT1S'));
+        $ctx->iWaitNSeconds(1);
+        $realDate = new \DateTimeImmutable();
+        $this->assertSame($expectedDate->getTimestamp(), $realDate->getTimestamp());
+    }
+
+    public function testWaitMilliseconds(): void
+    {
+        $ctx = new DateContext();
+        $expectedDate = (new \DateTimeImmutable())->add(new \DateInterval('PT1S'));
+        $ctx->iWaitNMilliseconds(1000);
+        $realDate = new \DateTimeImmutable();
+        $this->assertSame($expectedDate->getTimestamp(), $realDate->getTimestamp());
+    }
 }

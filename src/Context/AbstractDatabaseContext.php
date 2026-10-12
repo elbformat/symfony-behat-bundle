@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Elbformat\SymfonyBehatBundle\Context;
 
 use Behat\Behat\Context\Context;
+use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Driver\PDO\PgSQL\Driver as PgSqlDriver;
@@ -15,12 +16,17 @@ use Doctrine\Persistence\ObjectRepository;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 
 /**
- * @author Hannes Giesenow <hannes.giesenow@elbformat.de>
- *
  * @template T of object
+ *
+ * @phpstan-import-type NestedMap from NestedMapTrait
+ * @phpstan-import-type NestedMapValue from NestedMapTrait
  */
 abstract class AbstractDatabaseContext implements Context
 {
+    use TableOrStringTrait;
+
+    protected const string ENTITY_REFERENCE_PATTERN = '/^(.+)::(.+)$/';
+
     protected EntityManagerInterface $em;
 
     public function __construct(EntityManagerInterface $em)
@@ -33,15 +39,20 @@ abstract class AbstractDatabaseContext implements Context
         if (null === $classOrTableName) {
             $classOrTableName = $this->getClassName();
         }
-        try {
-            $metadata = $this->em->getClassMetadata($classOrTableName);
-            $classOrTableName = $metadata->getTableName();
-        } catch (MappingException) {
+        if (class_exists($classOrTableName)) {
+            try {
+                $metadata = $this->em->getClassMetadata($classOrTableName);
+                $classOrTableName = $metadata->getTableName();
+            } catch (MappingException) {
+            }
         }
 
         $this->exec('DELETE FROM '.$classOrTableName);
     }
 
+    /**
+     * @param ?class-string<T> $className
+     */
     protected function resetSequence(?string $className = null): void
     {
         if (null === $className) {
@@ -60,30 +71,46 @@ abstract class AbstractDatabaseContext implements Context
         }
     }
 
-    protected function createObject(TableNode $table): void
+    /**
+     * @return T
+     */
+    protected function createObject(?TableNode $tableNode = null, ?PyStringNode $pyStringNode = null): object
     {
-        /** @var array<string,string> $tableData */
-        $tableData = $table->getRowsHash();
-        $constructorArgs = $this->getConstructorArgsFromData($tableData);
+        $data = $this->getDataFromTableOrString($tableNode, $pyStringNode);
+        $data = array_merge($this->getDefaults(), $data);
+
+        return $this->createObjectFromData($data);
+    }
+
+    /**
+     * @param NestedMap $data
+     *
+     * @return T
+     */
+    protected function createObjectFromData(array $data): object
+    {
+        $constructorArgs = $this->getConstructorArgsFromData($data);
         $obj = $this->newObject($constructorArgs);
         $pa = new PropertyAccessor();
-        foreach ($tableData as $key => $val) {
+        foreach ($data as $key => $val) {
             // Skip, when entry was already consumed in constructor
             if (\array_key_exists($key, $constructorArgs)) {
                 continue;
             }
-            /** @psalm-suppress MixedAssignment */
             $val = $this->mapTableValue($key, $val);
             $pa->setValue($obj, $key, $val);
         }
-        /* @psalm-suppress PossiblyInvalidArgument */
         $this->em->persist($obj);
         $this->em->flush();
         $this->em->clear();
+
+        return $obj;
     }
 
-    /** @param class-string $class2 */
-    protected function createRelation(int $id1, string $class2, int $id2, string $relationName, ?string $reverseRelationName = null): void
+    /**
+     * @param class-string $class2
+     */
+    protected function createRelation(int|string $id1, string $class2, int|string $id2, string $relationName, ?string $reverseRelationName = null): void
     {
         $entity1 = $this->getRepo()->find($id1);
         if (null === $entity1) {
@@ -111,12 +138,13 @@ abstract class AbstractDatabaseContext implements Context
         $this->em->clear();
     }
 
-    /** @return T */
-    protected function assertObject(TableNode $table, bool $printAlternatives = true): object
+    /**
+     * @return T
+     */
+    protected function assertObject(?TableNode $table = null, ?PyStringNode $pyStringNode = null, bool $printAlternatives = true): object
     {
         $repo = $this->getRepo();
-        /** @var array<string,string> $tableData */
-        $tableData = $table->getRowsHash();
+        $tableData = $this->getDataFromTableOrString($table, $pyStringNode);
 
         // Convert types
         $data = [];
@@ -140,10 +168,10 @@ abstract class AbstractDatabaseContext implements Context
         throw new \DomainException($exceptionMessage);
     }
 
-    protected function assertNoObject(TableNode $table): void
+    protected function assertNoObject(?TableNode $table = null, ?PyStringNode $pyStringNode = null): void
     {
         try {
-            $this->assertObject($table, false);
+            $this->assertObject($table, $pyStringNode, false);
         } catch (\DomainException) {
             return;
         }
@@ -153,7 +181,7 @@ abstract class AbstractDatabaseContext implements Context
     /**
      * @param class-string $containingClass
      */
-    protected function assertCollectionContains(int $containerId, string $containingClass, int $containingId, string $relation): void
+    protected function assertCollectionContains(int|string $containerId, string $containingClass, int|string $containingId, string $relation): void
     {
         $mainEntry = $this->getRepo()->find($containerId);
         if (null === $mainEntry) {
@@ -168,14 +196,13 @@ abstract class AbstractDatabaseContext implements Context
         if (!$collection instanceof Collection) {
             throw new \DomainException(\sprintf('Property "%s" is not a collection.', $relation));
         }
-        /* @psalm-suppress RedundantConditionGivenDocblockType */
         if (!$collection->contains($containingEntry)) {
             throw new \DomainException(\sprintf('%s(%d) not in collection.', $containingClass, $containerId));
         }
     }
 
     /** @param class-string $containingClass */
-    protected function assertCollectionDoesNotContain(int $containerId, string $containingClass, int $containingId, string $relation): void
+    protected function assertCollectionDoesNotContain(int|string $containerId, string $containingClass, int|string $containingId, string $relation): void
     {
         try {
             $this->assertCollectionContains($containerId, $containingClass, $containingId, $relation);
@@ -190,31 +217,26 @@ abstract class AbstractDatabaseContext implements Context
         $this->em->getConnection()->executeQuery($query);
     }
 
-    protected function mapTableValue(string $key, string $value): mixed
+    protected function mapTableValue(string $key, mixed $value): mixed
     {
         $type = $this->getTypeOfProperty($key);
 
-        /* @psalm-suppress ArgumentTypeCoercion */
         switch (true) {
-            case null !== $type && enum_exists($type):
+            case null !== $type && enum_exists($type) && \is_string($value):
                 return \constant($type.'::'.$value);
                 // Reference to another entity with <Entity>::<ID>
-            case preg_match('/^(.+)::(.+)$/', $value, $match):
-                $className = preg_replace('/[^\\\]+$/', $match[1], $this->getClassName());
-                if (!class_exists($className)) {
-                    throw new \DomainException('Invalid entity name: '.$className);
-                }
+            case \is_string($value) && preg_match(self::ENTITY_REFERENCE_PATTERN, $value, $match):
+                return $this->resolveEntityReference($match[1], $match[2]);
 
-                return $this->em->getRepository($className)->find($match[2]);
             case 'DateTimeInterface' === $type:
             case 'DateTimeImmutable' === $type:
-                return new \DateTimeImmutable($value);
+                return \is_string($value) ? new \DateTimeImmutable($value) : $value;
             case 'DateTime' === $type:
-                return new \DateTime($value);
+                return \is_string($value) ? new \DateTime($value) : $value;
             case 'int' === $type:
-                return (int) $value;
+                return \is_scalar($value) ? (int) $value : $value;
             case 'float' === $type:
-                return (float) $value;
+                return \is_scalar($value) ? (float) $value : $value;
             case 'bool' === $type:
                 if ('true' === $value) {
                     return true;
@@ -225,29 +247,36 @@ abstract class AbstractDatabaseContext implements Context
 
                 return (bool) $value;
             case 'array' === $type:
-                return json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
+                if (\is_string($value)) {
+                    // @deprecated: use PropertyAccess instead
+                    return json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
+                }
+
+                return $type;
             default:
                 return $value;
         }
     }
 
-    /** @return string|bool|\DateTimeInterface|null */
-    protected function convertAssertionValue(string $value, ?string $type): mixed
+    /** @param NestedMapValue $value */
+    protected function convertAssertionValue(mixed $value, ?string $type): mixed
     {
-        if ('NULL' === $value) {
-            return null;
+        if (\is_string($value) && preg_match(self::ENTITY_REFERENCE_PATTERN, $value, $match)) {
+            return $this->resolveEntityReference($match[1], $match[2]);
         }
 
         return match ($type) {
-            'array' => json_decode($value, false, 512, \JSON_THROW_ON_ERROR),
-            'bool' => 'false' !== $value && '0' !== $value,
-            'DateTimeInterface', 'DateTime' => new \DateTime($value),
-            'DateTimeImmutable' => new \DateTimeImmutable($value),
+            // @deprecated use PropertyAccess Syntax instead
+            'array' => \is_string($value) ? json_decode($value, false, 512, \JSON_THROW_ON_ERROR) : $value,
+            // @deprecated use TRUE and FALSE instead
+            'bool' => \is_bool($value) ? $value : ('false' !== $value && '0' !== $value),
+            'DateTimeInterface', 'DateTime' => \is_string($value) ? new \DateTime($value) : $value,
+            'DateTimeImmutable' => \is_string($value) ? new \DateTimeImmutable($value) : $value,
             default => $value,
         };
     }
 
-    /** @param array<string,string> $data */
+    /** @param NestedMap $data */
     protected function printAlternatives(array $data): string
     {
         $pa = new PropertyAccessor();
@@ -298,19 +327,22 @@ abstract class AbstractDatabaseContext implements Context
                 if (!\is_scalar($realVal)) {
                     $realVal = '<'.\gettype($realVal).'>';
                 }
-                $return .= \sprintf("| %-20s | %20s | %20s |\n", $key, $val, (string) $realVal);
+                $return .= \sprintf("| %-20s | %20s | %20s |\n", $key, \is_scalar($val) ? $val : json_encode($val), (string) $realVal);
             }
         }
 
         return $return;
     }
 
-    /** @return T */
+    /**
+     * @param array<array-key, mixed> $constructorArgs
+     *
+     * @return T
+     */
     protected function newObject(array $constructorArgs = []): object
     {
         $className = $this->getClassName();
 
-        /* @psalm-suppress MixedMethodCall */
         return new $className(...$constructorArgs);
     }
 
@@ -321,15 +353,14 @@ abstract class AbstractDatabaseContext implements Context
     }
 
     /**
-     * @param class-string $entityName
+     * @template E of object
      *
-     * @psalm-suppress InvalidReturnType
+     * @param class-string<E> $entityName
      *
-     * @return ?T
+     * @return ?E
      */
-    protected function findEntity(string $entityName, int $id): ?object
+    protected function findEntity(string $entityName, int|string $id): ?object
     {
-        /* @psalm-suppress InvalidReturnStatement */
         return $this->em->getRepository($entityName)->find($id);
     }
 
@@ -346,9 +377,9 @@ abstract class AbstractDatabaseContext implements Context
     }
 
     /**
-     * @param array<string,string> $data
+     * @param NestedMap $data
      *
-     * @return array<string,mixed>
+     * @return array<array-key,mixed>
      */
     protected function getConstructorArgsFromData(array $data): array
     {
@@ -361,7 +392,6 @@ abstract class AbstractDatabaseContext implements Context
         $constructorParams = [];
         foreach ($constructorArgs as $arg) {
             $argName = $arg->getName();
-            /* @psalm-suppress MixedAssignment */
             $constructorParams[$argName] = $this->mapTableValue($argName, $data[$argName] ?? $this->getDefaultValue($argName));
         }
 
@@ -371,6 +401,28 @@ abstract class AbstractDatabaseContext implements Context
     protected function getDefaultValue(string $var): string
     {
         return '';
+    }
+
+    /** @return NestedMap */
+    protected function getDefaults(): array
+    {
+        return [];
+    }
+
+    protected function resolveEntityReference(string $class, int|string $id): ?object
+    {
+        // Use FQN
+        if (class_exists($class)) {
+            return $this->em->getRepository($class)->find($id);
+        }
+
+        // Use same-domain class name
+        $className = preg_replace('/[^\\\]+$/', $class, $this->getClassName());
+        if (!\is_string($className) || !class_exists($className)) {
+            throw new \DomainException('Invalid entity name: '.$className);
+        }
+
+        return $this->em->getRepository($className)->find($id);
     }
 
     /** @return class-string<T> */
