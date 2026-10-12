@@ -122,10 +122,14 @@ class MailerContext implements Context
     #[Then('the e-mail is being sent from :from')]
     public function theEMailIsBeingSentFrom(string $from): void
     {
-        $reallyFrom = $this->getLastMail()->getSender()?->getAddress() ?? '';
-        if ($reallyFrom !== $from) {
-            throw new \DomainException($reallyFrom);
+        $senders = $this->getLastMail()->getFrom();
+        foreach ($senders as $sender) {
+            if ($sender->getAddress() === $from) {
+                return;
+            }
         }
+
+        throw new \DomainException($senders[0]?->getAddress() ?? 'no sender');
     }
 
     #[Then('the e-mail has an attachment :name')]

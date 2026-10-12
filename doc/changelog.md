@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.6.1
+* MailerContext: Fixed the e-mail is being sent from to use "from" instead of "sender" 
+
 ## v1.6.0
 
 ### Fixes
