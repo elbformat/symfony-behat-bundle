@@ -47,7 +47,7 @@ class JsonContextTest extends TestCase
                 if ('POST' !== $request->getMethod()) {
                     return false;
                 }
-                if ('json' !== $request->getContentTypeFormat()) {
+                if ('json' !== $request->getFormat($request->headers->get('CONTENT_TYPE', ''))) {
                     return false;
                 }
                 if (implode("\n", $postData) !== $request->getContent()) {
@@ -79,7 +79,7 @@ class JsonContextTest extends TestCase
                 if ('POST' !== $request->getMethod()) {
                     return false;
                 }
-                if ('json' !== $request->getContentTypeFormat()) {
+                if ('json' !== $request->getFormat($request->headers->get('CONTENT_TYPE', ''))) {
                     return false;
                 }
                 if (implode("\n", $postData) !== $request->getContent()) {

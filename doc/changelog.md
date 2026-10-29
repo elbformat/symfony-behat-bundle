@@ -1,5 +1,32 @@
 # Changelog
 
+## v1.7.0
+
+### BC Breaks
+* AbstractDatabaseContext: convertAssertionValue() has now other parameters
+* AbstractDatabaseContext: mapTableValue() was renamed to convertCreationValue()
+* AbstractDatabaseContext: getTypeOfProperty() was removed in favor of a PropertyTypeExtractor service
+* AbstractDatabaseContext: got an extra constructor argument.
+
+### Fixes
+* Matrix build now really with different symfony versions
+
+### Features
+* AbstractDatabaseContext: Added PostChecks. (see beneath)
+* NestedMapTrait: assertNestedMapValue() method
+
+### Improvements
+* AbstractDatabaseContext: PropertyType resolving lazy and cached
+* AbstractDatabaseContext: Use symfony property-info component to guess the type of the property
+
+### Deprecations
+* Table syntax "false" and "true" -> use more generic FALSE and TRUE instead
+
+### Post Checks
+In this version we added a mechanism for post checks. 
+They are needed, when findOneBy cannot do the job for us, e.g. in arrays or when regex matching.
+For this we have a PostCheckInterface and two implementations, that are used for array and regex comparison.
+
 ## v1.6.1
 * Fix: MailerContext: Fixed the e-mail is being sent from to use "from" instead of "sender". 
 * Fix: Browser/State: Empty cookies are now being deleted.

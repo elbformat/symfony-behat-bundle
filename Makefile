@@ -13,9 +13,21 @@ phpstan:
 phpunit:
 	$(DOCKER_RUN) vendor/bin/phpunit --coverage-html=build
 
-.PHONY: composer
-composer:
-	$(DOCKER_RUN) composer install
+.PHONY: sf-5
+sf-5:
+	docker compose run --rm -e SYMFONY_REQUIRE="5.4.*" php composer update
+.PHONY: sf-6
+sf-6:
+	docker compose run --rm -e SYMFONY_REQUIRE="6.4.*" php composer update
+.PHONY: sf-7
+sf-7:
+	docker compose run --rm -e SYMFONY_REQUIRE="7.4.*" php composer update
+.PHONY: orm-2
+orm-2:
+	$(DOCKER_RUN) composer update --with "doctrine/orm:^2.0" doctrine/orm -W
+.PHONY: orm-3
+orm-3:
+	$(DOCKER_RUN) composer update --with "doctrine/orm:^3.0" doctrine/orm -W
 
 .PHONY: shell
 shell:

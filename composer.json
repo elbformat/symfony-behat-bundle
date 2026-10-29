@@ -26,9 +26,11 @@
     "ext-json": "*",
     "behat/behat": "^3.8",
     "friends-of-behat/symfony-extension": "^2.2",
-    "symfony/dom-crawler": "^5.4|^6.4|^7.4|^8.1",
-    "symfony/property-access": "^5.4|^6.4|^7.4|^8.1",
-    "symfony/yaml": "^5.4|^6.4|^7.4|^8.1",
+    "symfony/cache": "^5.4|^6.4|^7.4",
+    "symfony/dom-crawler": "^5.4|^6.4|^7.4",
+    "symfony/property-access": "^5.4|^6.4|^7.4",
+    "symfony/property-info": "^5.4|^6.4|^7.4",
+    "symfony/yaml": "^5.4|^6.4|^7.4",
     "webmozart/assert": "^2.5"
   },
   "require-dev": {
@@ -38,9 +40,9 @@
     "phpstan/phpstan-doctrine": "^2.0",
     "phpunit/phpunit": "^12.0",
     "slope-it/clock-mock": "^0.5",
-    "symfony/framework-bundle": "^5.4|^6.4|^7.4|^8.1",
-    "symfony/http-client": "^5.4|^6.4|^7.4|^8.1",
-    "symfony/mailer": "^5.4|^6.4|^7.4|^8.1"
+    "symfony/framework-bundle": "^5.4|^6.4|^7.4",
+    "symfony/http-client": "^5.4|^6.4|^7.4",
+    "symfony/mailer": "^5.4|^6.4|^7.4"
   },
   "config": {
     "allow-plugins": {

@@ -29,6 +29,10 @@ RUN apk add --no-cache --virtual .build-deps autoconf g++ make linux-headers &&\
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+# Flex for version pinning
+ENV COMPOSER_HOME=/opt/composer
+RUN composer global config allow-plugins.symfony/flex true
+RUN composer global require --no-progress --no-scripts --no-plugins symfony/flex
 
 # For codecov upload inside circleci
 RUN apk add gpg gpg-agent gpgv
