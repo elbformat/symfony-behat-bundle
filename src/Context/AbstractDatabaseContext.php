@@ -13,7 +13,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\Mapping\MappingException;
 use Doctrine\Persistence\ObjectRepository;
+use Elbformat\SymfonyBehatBundle\Helper\PropertyTypeExtractor;
+use Elbformat\SymfonyBehatBundle\PostCheck\PostCheckArrayContains;
+use Elbformat\SymfonyBehatBundle\PostCheck\PostCheckInterface;
+use Elbformat\SymfonyBehatBundle\PostCheck\PostCheckStringMatches;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
+use Symfony\Component\TypeInfo\TypeIdentifier;
+use Webmozart\Assert\Assert;
 
 /**
  * @template T of object
@@ -27,11 +33,10 @@ abstract class AbstractDatabaseContext implements Context
 
     protected const string ENTITY_REFERENCE_PATTERN = '/^(.+)::(.+)$/';
 
-    protected EntityManagerInterface $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        $this->em = $em;
+    public function __construct(
+        protected EntityManagerInterface $em,
+        protected PropertyTypeExtractor $propertyTypeExtractor,
+    ) {
     }
 
     protected function resetDatabase(?string $classOrTableName = null): void
@@ -97,8 +102,10 @@ abstract class AbstractDatabaseContext implements Context
             if (\array_key_exists($key, $constructorArgs)) {
                 continue;
             }
-            $val = $this->mapTableValue($key, $val);
-            $pa->setValue($obj, $key, $val);
+            $val = $this->convertCreationValue($key, $val);
+            // This is to make phpstan typesystem happy in sf < 7.4
+            $paObj = $obj;
+            $pa->setValue($paObj, $key, $val);
         }
         $this->em->persist($obj);
         $this->em->flush();
@@ -148,12 +155,24 @@ abstract class AbstractDatabaseContext implements Context
 
         // Convert types
         $data = [];
+        $postChecks = [];
         foreach ($tableData as $key => $val) {
-            $data[$key] = $this->convertAssertionValue($val, $this->getTypeOfProperty($key));
+            $convertedValue = $this->convertAssertionValue($key, $val);
+            if ($convertedValue instanceof PostCheckInterface) {
+                $postChecks[$key] = $convertedValue;
+            } else {
+                $data[$key] = $convertedValue;
+            }
         }
 
-        // Found
-        $obj = $repo->findOneBy($data);
+        if (0 === \count($postChecks)) {
+            // There is only one candidate
+            $obj = $repo->findOneBy($data);
+        } else {
+            // Test all candidates
+            $candidates = $repo->findBy($data);
+            $obj = $this->postCheckFilter($candidates, $postChecks);
+        }
         if (null !== $obj) {
             return $obj;
         }
@@ -217,63 +236,106 @@ abstract class AbstractDatabaseContext implements Context
         $this->em->getConnection()->executeQuery($query);
     }
 
-    protected function mapTableValue(string $key, mixed $value): mixed
+    /**
+     * @param NestedMapValue $value
+     */
+    protected function convertCreationValue(string $key, mixed $value): mixed
     {
-        $type = $this->getTypeOfProperty($key);
+        self::assertNestedMapValue($value);
 
-        switch (true) {
-            case null !== $type && enum_exists($type) && \is_string($value):
+        // Reference to another entity with <Entity>::<ID>
+        $isString = \is_string($value);
+        if ($isString && preg_match(self::ENTITY_REFERENCE_PATTERN, $value, $match)) {
+            return $this->resolveEntityReference($match[1], $match[2]);
+        }
+
+        $type = $this->propertyTypeExtractor->getTypeOfProperty($this->getClassName(), $key);
+
+        if ($isString) {
+            // Enum
+            if (null !== $type && enum_exists($type)) {
                 return \constant($type.'::'.$value);
-                // Reference to another entity with <Entity>::<ID>
-            case \is_string($value) && preg_match(self::ENTITY_REFERENCE_PATTERN, $value, $match):
-                return $this->resolveEntityReference($match[1], $match[2]);
+            }
+            if (\DateTimeInterface::class === $type || \DateTimeImmutable::class === $type) {
+                return new \DateTimeImmutable($value);
+            }
+            if (\DateTime::class === $type) {
+                return new \DateTime($value);
+            }
+            // Can be changed to TypeIdentifier::ARRAY->value when sf < 7.4 support is dropped
+            if ('array' === $type) {
+                // @deprecated: use PropertyAccess instead
+                return json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
+            }
+        }
 
-            case 'DateTimeInterface' === $type:
-            case 'DateTimeImmutable' === $type:
-                return \is_string($value) ? new \DateTimeImmutable($value) : $value;
-            case 'DateTime' === $type:
-                return \is_string($value) ? new \DateTime($value) : $value;
-            case 'int' === $type:
-                return \is_scalar($value) ? (int) $value : $value;
-            case 'float' === $type:
-                return \is_scalar($value) ? (float) $value : $value;
-            case 'bool' === $type:
+        $isScalar = \is_scalar($value);
+        if ($isScalar) {
+            if ('int' === $type) {
+                return (int) $value;
+            }
+            if ('float' === $type) {
+                return (float) $value;
+            }
+            if ('bool' === $type) {
+                // @deprecated use 'TRUE' and it will be converted from table syntax automatically
                 if ('true' === $value) {
                     return true;
                 }
+                // @deprecated use 'FALSE' and it will be converted from table syntax automatically
                 if ('false' === $value) {
                     return false;
                 }
 
                 return (bool) $value;
-            case 'array' === $type:
-                if (\is_string($value)) {
-                    // @deprecated: use PropertyAccess instead
-                    return json_decode($value, true, flags: \JSON_THROW_ON_ERROR);
-                }
-
-                return $type;
-            default:
-                return $value;
+            }
         }
+
+        return $value;
     }
 
     /** @param NestedMapValue $value */
-    protected function convertAssertionValue(mixed $value, ?string $type): mixed
+    protected function convertAssertionValue(string $key, mixed $value): mixed
     {
-        if (\is_string($value) && preg_match(self::ENTITY_REFERENCE_PATTERN, $value, $match)) {
-            return $this->resolveEntityReference($match[1], $match[2]);
+        self::assertNestedMapValue($value);
+
+        $isString = \is_string($value);
+        $type = $this->propertyTypeExtractor->getTypeOfProperty($this->getClassName(), $key, PropertyTypeExtractor::INTERNAL);
+        if ($isString) {
+            if (preg_match(self::ENTITY_REFERENCE_PATTERN, $value, $match)) {
+                return $this->resolveEntityReference($match[1], $match[2]);
+            }
+            if (str_starts_with($value, '~')) {
+                return new PostCheckStringMatches($value);
+            }
+            if (\DateTimeInterface::class === $type || \DateTimeImmutable::class === $type) {
+                return new \DateTimeImmutable($value);
+            }
+            if (\DateTime::class === $type) {
+                return new \DateTime($value);
+            }
         }
 
-        return match ($type) {
+        if ('array' === $type) {
             // @deprecated use PropertyAccess Syntax instead
-            'array' => \is_string($value) ? json_decode($value, false, 512, \JSON_THROW_ON_ERROR) : $value,
+            if ($isString) {
+                $value = json_decode($value, false, 512, \JSON_THROW_ON_ERROR);
+            }
+            Assert::isArray($value);
+
+            return new PostCheckArrayContains($value);
+        }
+
+        if (\is_scalar($value) && 'bool' === $type) {
+            if (\is_bool($value)) {
+                return $value;
+            }
+
             // @deprecated use TRUE and FALSE instead
-            'bool' => \is_bool($value) ? $value : ('false' !== $value && '0' !== $value),
-            'DateTimeInterface', 'DateTime' => \is_string($value) ? new \DateTime($value) : $value,
-            'DateTimeImmutable' => \is_string($value) ? new \DateTimeImmutable($value) : $value,
-            default => $value,
-        };
+            return 'false' !== $value && '0' !== $value;
+        }
+
+        return $value;
     }
 
     /** @param NestedMap $data */
@@ -285,7 +347,7 @@ abstract class AbstractDatabaseContext implements Context
             $return .= \sprintf("| %-20s | %-20s | %-20s |\n", str_repeat('-', 20), str_repeat('-', 20), str_repeat('-', 20));
             foreach ($data as $key => $val) {
                 $realVal = $pa->getValue($item, $key);
-                $type = $this->getTypeOfProperty($key);
+                $type = $this->propertyTypeExtractor->getTypeOfProperty($this->getClassName(), $key, PropertyTypeExtractor::READ);
                 switch (true) {
                     case $realVal instanceof \BackedEnum:
                         $realVal = $realVal->value;
@@ -364,18 +426,6 @@ abstract class AbstractDatabaseContext implements Context
         return $this->em->getRepository($entityName)->find($id);
     }
 
-    protected function getTypeOfProperty(string $propertyName): ?string
-    {
-        $refl = new \ReflectionClass($this->getClassName());
-        $reflProp = $refl->getProperty($propertyName);
-        if (!$reflProp->hasType()) {
-            return null;
-        }
-        $type = $reflProp->getType();
-
-        return $type instanceof \ReflectionNamedType ? $type->getName() : null;
-    }
-
     /**
      * @param NestedMap $data
      *
@@ -392,7 +442,7 @@ abstract class AbstractDatabaseContext implements Context
         $constructorParams = [];
         foreach ($constructorArgs as $arg) {
             $argName = $arg->getName();
-            $constructorParams[$argName] = $this->mapTableValue($argName, $data[$argName] ?? $this->getDefaultValue($argName));
+            $constructorParams[$argName] = $this->convertCreationValue($argName, $data[$argName] ?? $this->getDefaultValue($argName));
         }
 
         return $constructorParams;
@@ -423,6 +473,31 @@ abstract class AbstractDatabaseContext implements Context
         }
 
         return $this->em->getRepository($className)->find($id);
+    }
+
+    /**
+     * @param list<T>                          $candidates
+     * @param array<string,PostCheckInterface> $postChecks
+     *
+     * @return T|null
+     */
+    protected function postCheckFilter(array $candidates, array $postChecks): ?object
+    {
+        $pa = new PropertyAccessor();
+        foreach ($candidates as $candidate) {
+            foreach ($postChecks as $key => $postCheck) {
+                $foundValue = $pa->getValue($candidate, $key);
+                // Check failed -> next candidate
+                if (!$postCheck($foundValue)) {
+                    continue 2;
+                }
+            }
+
+            // All checks passed
+            return $candidate;
+        }
+
+        return null;
     }
 
     /** @return class-string<T> */

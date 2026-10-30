@@ -21,12 +21,24 @@ trait NestedMapTrait
         Assert::isMap($value);
         foreach ($value as $key => $entry) {
             Assert::string($key);
-            if (\is_scalar($entry) || null === $entry) {
-                continue;
-            }
-            if (!\is_array($entry)) {
+            try {
+                self::assertNestedMapValue($entry);
+            } catch (\InvalidArgumentException) {
                 throw new \InvalidArgumentException('data structure contains other than scalar or array values: '.\gettype($entry));
             }
+        }
+    }
+
+    /**
+     * @phpstan-assert NestedMapValue $value
+     */
+    protected static function assertNestedMapValue(mixed $value): void
+    {
+        if (\is_scalar($value) || null === $value) {
+            return;
+        }
+        if (!\is_array($value)) {
+            throw new \InvalidArgumentException('value contains other than scalar or array values: '.\gettype($value));
         }
     }
 }

@@ -161,7 +161,7 @@ class MailerContext implements Context
         $attachmentHash = md5(base64_decode($this->lastAttachment->bodyToString()));
 
         if ($fixtureHash !== $attachmentHash) {
-            throw new \DomainException(\sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->getFilename() ?? ''));
+            throw new \DomainException(\sprintf('Attachment with name %s does not match fixture.', $this->lastAttachment->asDebugString()));
         }
     }
 

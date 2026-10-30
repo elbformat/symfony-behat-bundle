@@ -36,6 +36,7 @@ services:
 
   Elbformat\SymfonyBehatBundle\Helper\ArrayDeepCompare: ~
   Elbformat\SymfonyBehatBundle\Helper\StringCompare: ~
+  Elbformat\SymfonyBehatBundle\Helper\PropertyTypeExtractor: ~
   Elbformat\SymfonyBehatBundle\HttpClient\MockClientCallback: ~
   Elbformat\SymfonyBehatBundle\Logger\TestLogger: ~
   Elbformat\SymfonyBehatBundle\Mailer\TestTransportFactory:

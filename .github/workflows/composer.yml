@@ -12,13 +12,12 @@ jobs:
       image: ghcr.io/${{ github.repository }}/php:${{matrix.php_version}}
     strategy:
       matrix:
-        php_version: [ '8.3','8.4','8.5' ]
+        php_version: [ '8.3', '8.4', '8.5' ]
         # No Symfony 8.x yet, as behat/behat does not support it.
-        symfony_version: [ '5.4', '6.4', '7.4']
-
+        symfony_version: [ '5.4', '6.4', '7.4' ]
+    env:
+      SYMFONY_REQUIRE: ${{ matrix.symfony_version }}.*
     steps:
       - uses: actions/checkout@v7
-      - name: Pin symfony version
-        run: composer config extra.symfony.require "^${{matrix.symfony_version}}"
       - name: Run check
         run: composer validate

@@ -151,7 +151,7 @@ class HttpContext implements Context
         }
 
         foreach ($response->headers->all() as $key => $val) {
-            if ('location' === strtolower($key)) {
+            if ('location' === strtolower((string) $key)) {
                 $val0 = ($val[0] ?? '');
                 // Compare only the path
                 if (str_starts_with($url, '/')) {

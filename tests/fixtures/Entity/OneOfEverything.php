@@ -22,6 +22,7 @@ class OneOfEverything
     protected Collection $collection;
     protected MyBackedEnum $backedEnum;
     protected MyEnum $enum;
+    protected array $array = [];
     protected self $self;
 
     protected $untyped;
@@ -131,6 +132,16 @@ class OneOfEverything
     public function setEnum(MyEnum $enum): void
     {
         $this->enum = $enum;
+    }
+
+    public function getArray(): array
+    {
+        return $this->array;
+    }
+
+    public function setArray(array $array): void
+    {
+        $this->array = $array;
     }
 
     public function getSelf(): self

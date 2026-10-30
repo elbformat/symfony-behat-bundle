@@ -3,6 +3,14 @@ name: Create and publish a Docker image
 on:
   schedule:
     - cron: '0 3 1 * *'
+  workflow_dispatch:
+#  #temp
+#  push:
+#    branches:
+#      - postChecks
+#    paths:
+#      - 'docker/**'
+#      - '.github/workflows/docker.yml'
 
 env:
   REGISTRY: ghcr.io
@@ -40,6 +48,7 @@ jobs:
           context: docker
           file: docker/Dockerfile.${{matrix.php_version}}
           push: true
+          pull: true
           #tags: ${{ steps.meta.outputs.tags }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{matrix.php_version}}
           labels: ${{ steps.meta.outputs.labels }}
