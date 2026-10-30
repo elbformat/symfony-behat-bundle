@@ -26,11 +26,11 @@
     "ext-json": "*",
     "behat/behat": "^3.8",
     "friends-of-behat/symfony-extension": "^2.2",
-    "symfony/cache": "^5.4|^6.4|^7.4",
-    "symfony/dom-crawler": "^5.4|^6.4|^7.4",
-    "symfony/property-access": "^5.4|^6.4|^7.4",
-    "symfony/property-info": "^5.4|^6.4|^7.4",
-    "symfony/yaml": "^5.4|^6.4|^7.4",
+    "symfony/cache": "8.1.10",
+    "symfony/dom-crawler": "8.1.10",
+    "symfony/property-access": "8.1.10",
+    "symfony/property-info": "8.1.10",
+    "symfony/yaml": "8.1.10",
     "webmozart/assert": "^2.5"
   },
   "require-dev": {
@@ -40,9 +40,9 @@
     "phpstan/phpstan-doctrine": "^2.0",
     "phpunit/phpunit": "^12.0",
     "slope-it/clock-mock": "^0.5",
-    "symfony/framework-bundle": "^5.4|^6.4|^7.4",
-    "symfony/http-client": "^5.4|^6.4|^7.4",
-    "symfony/mailer": "^5.4|^6.4|^7.4"
+    "symfony/framework-bundle": "8.1.10",
+    "symfony/http-client": "8.1.10",
+    "symfony/mailer": "8.1.10"
   },
   "config": {
     "allow-plugins": {
