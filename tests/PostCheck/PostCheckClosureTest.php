@@ -13,10 +13,13 @@ class PostCheckClosureTest extends TestCase
 {
     public function testArrayContains(): void
     {
-        $check = new PostCheckClosure(static function (mixed $value): bool {
+        $obj = new \stdClass();
+        $check = new PostCheckClosure(static function (mixed $value, object $object) use ($obj): bool {
+            self::assertSame($obj, $object);
+
             return 7 === $value;
         });
-        $this->assertTrue($check(7));
-        $this->assertFalse($check('Hello World'));
+        $this->assertTrue($check(7, $obj));
+        $this->assertFalse($check('Hello World', $obj));
     }
 }

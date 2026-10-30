@@ -13,9 +13,10 @@ class PostCheckArrayContainsTest extends TestCase
 {
     public function testArrayContains(): void
     {
+        $obj = new \stdClass();
         $check = new PostCheckArrayContains([1, 2]);
-        $this->assertTrue($check([1, 2, 3]));
-        $this->assertFalse($check([1, 3]));
-        $this->assertFalse($check('Hello World'));
+        $this->assertTrue($check([1, 2, 3], $obj));
+        $this->assertFalse($check([1, 3], $obj));
+        $this->assertFalse($check('Hello World', $obj));
     }
 }

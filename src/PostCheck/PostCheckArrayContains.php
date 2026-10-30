@@ -16,7 +16,7 @@ class PostCheckArrayContains implements PostCheckInterface
     ) {
     }
 
-    public function __invoke(mixed $data): bool
+    public function __invoke(mixed $data, object $object): bool
     {
         if (!\is_array($data)) {
             return false;

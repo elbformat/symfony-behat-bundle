@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.7.1
+
+### Change
+* PostCheckInterface: add the whole objekt as second parameter, to do something like checking the password (which requires the user itself)
+
+
 ## v1.7.0
 
 ### BC Breaks
