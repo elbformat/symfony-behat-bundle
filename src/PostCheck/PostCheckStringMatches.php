@@ -13,7 +13,7 @@ class PostCheckStringMatches implements PostCheckInterface
     ) {
     }
 
-    public function __invoke(mixed $data): bool
+    public function __invoke(mixed $data, object $object): bool
     {
         if (!\is_scalar($data)) {
             return false;

@@ -13,13 +13,13 @@ class PostCheckStringMatchesTest extends TestCase
 {
     public function testArrayContains(): void
     {
+        $obj = new \stdClass();
         $check = new PostCheckStringMatches('~Hello');
-        $this->assertTrue($check('I see Hello World'));
-        $this->assertTrue($check('Hello World'));
-        $this->assertTrue($check('Hello'));
-        $this->assertFalse($check('World'));
-        $this->assertFalse($check([1, 3]));
-        $this->assertFalse($check(7));
-        $this->assertFalse($check(7));
+        $this->assertTrue($check('I see Hello World', $obj));
+        $this->assertTrue($check('Hello World', $obj));
+        $this->assertTrue($check('Hello', $obj));
+        $this->assertFalse($check('World', $obj));
+        $this->assertFalse($check([1, 3], $obj));
+        $this->assertFalse($check(7, $obj));
     }
 }

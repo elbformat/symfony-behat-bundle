@@ -488,7 +488,7 @@ abstract class AbstractDatabaseContext implements Context
             foreach ($postChecks as $key => $postCheck) {
                 $foundValue = $pa->getValue($candidate, $key);
                 // Check failed -> next candidate
-                if (!$postCheck($foundValue)) {
+                if (!$postCheck($foundValue, $candidate)) {
                     continue 2;
                 }
             }

@@ -9,7 +9,7 @@ use Webmozart\Assert\Assert;
 class PostCheckClosure implements PostCheckInterface
 {
     /**
-     * @param callable(mixed $data):bool $closure
+     * @param callable(mixed $data, object $object):bool $closure
      */
     public function __construct(
         protected mixed $closure,
@@ -17,8 +17,8 @@ class PostCheckClosure implements PostCheckInterface
         Assert::isCallable($this->closure);
     }
 
-    public function __invoke(mixed $data): bool
+    public function __invoke(mixed $data, object $object): bool
     {
-        return ($this->closure)($data);
+        return ($this->closure)($data, $object);
     }
 }
